@@ -1,0 +1,128 @@
+= abackup - Apraxos Backup
+
+== Anforderungen und Ziele
+
+- Konsistente Sicherung
+- Überprüfbare Backups (Zeitstempel, Fehlerlogs)
+- Sicherung vor Apraxos Updates
+- Tägliche Sicherung
+- Bereitstellung verschiedener paraller Stände zu Recherche Zwecke
+- Das Backup ist ein vollständiges Abbild und für sich lauffähig 
+- Schutz vor Verschlüsselungstrojanern
+- Berücksichtung von Brandabschnitten
+- Berücksichtigung von beweissicheren Archivierungsrichtlinien 
+- Es sollte in wenigen Minuten erstellt sein
+- Daten verlassen, auf welchem Medium auch immer, die Praxis nur verschlüsselt
+- Es ist anzustreben, dass auf frühere Sicherungspunkte zurückgegriffen werden kann
+- Differenzielle Sicherung
+
+== Lösungsstrategie
+
+- Backup Script muss unabhägig von Apraxos sein
+- Die Konfiguration sollte zwischen Backup Skript und Apraxos geteilt sein 
+- Die Backup Konfiguration muss anpassbar bleiben
+- Optionale Einbindung von NAS Systemen
+- Optionale Einbindung von externen verschlüsselten Speichermedian wie USB Festplatten
+
+== Implementierungsideen
+
+- rsync nutzen
+- ebenso könnte eine Sicherung auf einen häuslichen Rechner über das Internet laufen, verschlüsselte Übertragung vorausgesetzt. 
+- Differenzielle Sicherung auf lokaler Festplatte/USB Festplatte mittels rsync --linkdest
+- Differenzielle Sicherung auf NAS: Nutzung von Snapshots
+- integrierbar in Apraxos, da Apraxos am besten weiss, wann eine Sicherung geschrieben werden kann
+- integrierbar als cron job
+- USB Festplatten im Rotationsprinzip nutzen: Sicherheit bei Brand und Diebstahl bieten nur 1-5 USB-Festplatten, bei Bedarf auch 
+verkryptet, die nach dem Rotationssystem benutzt werden und jeweils mit nach Hause 
+genommen werden.
+- backup-timestamp die apw.ini und kann vom START-Programm dort ausgelesen werden.
+- find /pfad/zu/praxisdaten -newer /tmp/backup_timestamp ...könnte überprüft werden, ob es zu sichernde Änderungen gibt.
+- backup_timestamp auf die Liste der ausgeschlossenen (--exclude=...) Dateien setzen
+- Speicherort von backup_timestamp konfiguierbar
+- es gibt im apraxos-Hauptverzeichnis eine Datei backup.cfg, in der die verschiedensten 
+Konfigurationsmöglichkeiten hinterlegt werden können. 
+Diese Datei kann sowohl von einem Shell-Skript von einem anderen Rechner aus genutzt 
+werden, oder von einem Shell-Skript, das als cron-Job läuft. Es kann aber auch aus apraxos 
+heraus
+
+1. konfiguriert werden
+2. aus apraxos heraus für eine manuelle Sicherung aufgerufen werden.
+(Das ist für die Anwender, die keine komplexen Sicherungskonstruktionen wollen und den 
+Server auch nicht über Nacht durchlaufen lassen).
+In der Sicherung wird das Datum der letzten Sicherung hinterlegt. Das Update-Programm 
+kontrolliert, ob eine Sicherung durchgeführt wurde und führt eine Sicherung durch, falls 
+keine aktuelle Sicherung gelaufen ist.
+- Eine Sicherung in eine Cloud wäre auch möglich. Das Hochladen muss natürlich 
+verschlüsselt passieren. Bei einer Cloud besteht grundsätzlich das Problem, dass man 
+womöglich nicht mehr an die Daten kommt, wenn der Cloud-Betreiber Pleite macht und 
+einfach der Stöpsel gezogen wird. Und man weiss nie, ob die NSA nicht auch mitliest .
+
+== abackup.sh "Command Line Interface"
+
+.abackup.sh run
+- rsync vom "*/home/praxis/a" Verzeichnis nach /home/abackup/mnt/*<Wochentag>/a
+- rsync vom "*/home/praxis/a" Verzeichnis direkt zum NAS unter z.B.
+/share/abackup-rsync/*<Kalender-Woche MODULO 14>/a
+- das Fehler- und Statusprotokoll wird gespeichert
+
+.abackup.sh status
+- listet Informationen und Fehler aller Backups
+- return != 0 falls ein Fehler erkannt wurde
+
+.abackup.sh install
+- tbd
+
+.abackup.sh uninstall
+- tbd
+
+Wie mache ich jetzt ein Wochentags- und Wochen-Backup?
+
+[source,bash]
+----
+abackup.sh run
+----
+
+Wie prüft man ob das Backup ok ist?
+
+[source,bash]
+----
+login abackup
+abackup.sh status
+----
+
+Wie recherchiert man im Stand vom letzten Mittwoch?
+
+[source,bash]
+----
+login abackup
+cd mnt/we/a
+./apraxos64.unx
+----
+
+Wie kann man den Stand vom letzten Mittwoch wiederherstellen? z.B. so:
+
+[source,bash]
+----
+login praxis
+mv a a.kaputt
+cp -a /home/abackup/mnt/we/a .
+----
+
+Wie kann man den Stand von vor x Wochen (z.B. KW 18) wiederherestellen? z.B. so:
+
+[source,bash]
+----
+login praxis
+mv a a.kaputt
+# KW 18 ist ist im Verzeichnis (18 % 14) = 4
+rsync -avi --stats -e ssh admin@myqnapnas:*/share/abackup-rsync/4/a
+/home/praxis/a/* > /tmp/sync.log 2>&1
+----
+
+== abackup.sh test
+
+[source,bash]
+----
+abackup_test.sh
+----
+
