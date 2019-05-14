@@ -59,16 +59,42 @@ if [[ -n $1 ]]; then
 fi
 
 if [[ -n $RUN ]]; then
-    echo "****** rolling backup *******"
-    mkdir -p ${destfolder_rolling}
-    rsync ${rsyncopts} "${sourcefolder}" "${destfolder_rolling}"
+    if [[ -f ${backuptimestamp} ]]; then 
+        last=$(date -r ${backuptimestamp} +%Y-%m-%d-%H%M%S)
+        echo "****** last backup was ${last}"
+    fi
+
+    touch ${backuptimestamp}
+    now=$(date -r ${backuptimestamp} +%Y-%m-%d-%H%M%S)
+
+    echo "****** rolling backup start *******"
+    mkdir -p ${destfolder_rolling} ${logfolder}
+    rsync ${rsyncopts} --log-file=${logfolder}/rolling-${now}.log "${sourcefolder}" "${destfolder_rolling}"
+    echo "****** rolling backup end *******"
     
-    echo "***** differential backup ******"
-    destfolder_diff_last=$(realpath -m --relative-to=. ${destfolder_diff}..)/last
-    echo destfolder_diff_last $destfolder_diff_last
+    echo ""
+    
+    echo "****** differential backup start ******"
+    if [[ -n $last ]]; then
+        destfolder_diff_last=$(realpath -m ${destfolder_diff}..)/last
+        echo destfolder_diff_last $destfolder_diff_last
+    fi
+
     mkdir -p ${destfolder_diff}
-    rsync ${rsyncopts}  "${sourcefolder}"  "${destfolder_diff}" --link-dest="${destfolder_diff_last}"
+    sourcefolder=$(realpath -m $sourcefolder)
+    destfolder_diff=$(realpath -m $destfolder_diff)
+
+    if [[ -d ${destfolder_diff_last} ]]; then
+        linkdestopt="--link-dest=${destfolder_diff_last}"
+    else
+        linkdestopt=
+    fi
+    echo rsync ${rsyncopts} --log-file=${logfolder}/differential-${now}.log "${sourcefolder}"  "${destfolder_diff}" $linkdestopt
+    rsync ${rsyncopts} --log-file=${logfolder}/differential-${now}.log "${sourcefolder}"  "${destfolder_diff}" $linkdestopt
+
     ln -nsf "${destfolder_diff}" "${destfolder_diff_last}"
+    echo "****** differential backup end ******"
+
 fi
 
 if [[ -n $STATUS ]]; then

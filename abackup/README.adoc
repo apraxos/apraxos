@@ -2,33 +2,31 @@
 
 == Anforderungen und Ziele
 
-- Konsistente Sicherung
+- Differenzielle tägliche Sicherung: Viele Stände, wenig Speicherbedarf
+- Rollierende Wochentagssicherung: Bereitstellung verschiedener paraller Stände zu Recherche Zwecke. Das Backup ist ein vollständiges Abbild und für sich lauffähig
+- Konsistente Sicherung 
 - Überprüfbare Backups (Zeitstempel, Fehlerlogs)
-- Sicherung vor Apraxos Updates
-- Tägliche Sicherung
-- Bereitstellung verschiedener paraller Stände zu Recherche Zwecke
-- Das Backup ist ein vollständiges Abbild und für sich lauffähig 
+- Anstoßen der Sicherung vor Apraxos Updates
 - Schutz vor Verschlüsselungstrojanern
 - Berücksichtung von Brandabschnitten
 - Berücksichtigung von beweissicheren Archivierungsrichtlinien 
 - Es sollte in wenigen Minuten erstellt sein
 - Daten verlassen, auf welchem Medium auch immer, die Praxis nur verschlüsselt
-- Es ist anzustreben, dass auf frühere Sicherungspunkte zurückgegriffen werden kann
-- Differenzielle Sicherung
 
 == Lösungsstrategie
 
 - Backup Script muss unabhägig von Apraxos sein
 - Die Konfiguration sollte zwischen Backup Skript und Apraxos geteilt sein 
 - Die Backup Konfiguration muss anpassbar bleiben
+- beides - Differenzielle Sicherung und rollierende Sicherung anbieten
 - Optionale Einbindung von NAS Systemen
 - Optionale Einbindung von externen verschlüsselten Speichermedian wie USB Festplatten
 
 == Implementierungsideen
 
-- rsync nutzen
+- rsync für lokale Sicherung nuten (optional: auch um auf NAS zu sichern)
 - ebenso könnte eine Sicherung auf einen häuslichen Rechner über das Internet laufen, verschlüsselte Übertragung vorausgesetzt. 
-- Differenzielle Sicherung auf lokaler Festplatte/USB Festplatte mittels rsync --linkdest
+- Differenzielle Sicherung auf lokaler Festplatte/USB Festplatte mittels rsync --link-dest
 - Differenzielle Sicherung auf NAS: Nutzung von Snapshots
 - integrierbar in Apraxos, da Apraxos am besten weiss, wann eine Sicherung geschrieben werden kann
 - integrierbar als cron job
@@ -60,10 +58,10 @@ einfach der Stöpsel gezogen wird. Und man weiss nie, ob die NSA nicht auch mitl
 == abackup.sh "Command Line Interface"
 
 .abackup.sh run
-- rsync vom "*/home/praxis/a" Verzeichnis nach /home/abackup/mnt/*<Wochentag>/a
-- rsync vom "*/home/praxis/a" Verzeichnis direkt zum NAS unter z.B.
-/share/abackup-rsync/*<Kalender-Woche MODULO 14>/a
+- rsync zur rollierenden Wochentagssicherung
+- rsync zur differentiellen täglichen Sicherung 
 - das Fehler- und Statusprotokoll wird gespeichert
+- ein backup_timestamp wird erzeugt
 
 .abackup.sh status
 - listet Informationen und Fehler aller Backups
@@ -75,7 +73,7 @@ einfach der Stöpsel gezogen wird. Und man weiss nie, ob die NSA nicht auch mitl
 .abackup.sh uninstall
 - tbd
 
-Wie mache ich jetzt ein Wochentags- und Wochen-Backup?
+Wie mache ich jetzt ein Backup?
 
 [source,bash]
 ----
@@ -95,7 +93,7 @@ Wie recherchiert man im Stand vom letzten Mittwoch?
 [source,bash]
 ----
 login abackup
-cd mnt/we/a
+cd mnt/Mittwoch/a
 ./apraxos64.unx
 ----
 
@@ -108,16 +106,9 @@ mv a a.kaputt
 cp -a /home/abackup/mnt/we/a .
 ----
 
-Wie kann man den Stand von vor x Wochen (z.B. KW 18) wiederherestellen? z.B. so:
+Wie kann man den Stand von vor x Wochen (z.B. KW 18) wiederherestellen? z.B. so
 
-[source,bash]
-----
-login praxis
-mv a a.kaputt
-# KW 18 ist ist im Verzeichnis (18 % 14) = 4
-rsync -avi --stats -e ssh admin@myqnapnas:*/share/abackup-rsync/4/a
-/home/praxis/a/* > /tmp/sync.log 2>&1
-----
+tbd
 
 == abackup.sh test
 
