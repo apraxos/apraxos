@@ -9,9 +9,9 @@
 - Anstoßen der Sicherung vor Apraxos Updates
 - Schutz vor Verschlüsselungstrojanern
 - Berücksichtung von Brandabschnitten
-- Berücksichtigung von beweissicheren Archivierungsrichtlinien 
 - Es sollte in wenigen Minuten erstellt sein
 - Daten verlassen, auf welchem Medium auch immer, die Praxis nur verschlüsselt
+- Bisher nicht berücksichtigt: beweissicheren Archivierungsrichtlinien 
 
 == Lösungsstrategie
 
@@ -57,6 +57,12 @@ einfach der Stöpsel gezogen wird. Und man weiss nie, ob die NSA nicht auch mitl
 
 == abackup.sh "Command Line Interface"
 
+Konfiguration, siehe backup.cfg !
+
+.Fehlerbehandlung:
+- exit != 0 falls ein Fehler erkannt wurde
+- Fehlerausgabe aktuell in stdout (ToDo: errout?)
+
 .abackup.sh run
 - rsync zur rollierenden Wochentagssicherung
 - rsync zur differentiellen täglichen Sicherung 
@@ -64,8 +70,12 @@ einfach der Stöpsel gezogen wird. Und man weiss nie, ob die NSA nicht auch mitl
 - ein backup_timestamp wird erzeugt
 
 .abackup.sh status
-- listet Informationen und Fehler aller Backups
-- return != 0 falls ein Fehler erkannt wurde
+- listet Informationen zum Backupzeitpunkt und Fehler 
+- zeigt Anzahl neuerer Dateien
+- exit status 0 falls das Backup aktuell ist
+
+.abackup.sh changes
+- listet Dateien, die neuer sind als das letzte Backup
 
 .abackup.sh install
 - tbd
@@ -117,3 +127,13 @@ tbd
 abackup_test.sh
 ----
 
+== Offene Punkte
+
+- Dokumentation mit Beispielen und Diagrammen
+- Fehlermeldungen maschienenverarbeitbar: Exit Code + Stdout (oder Stderr) ?
+- Test Replizierung zu entfernten NAS über SSH 
+- weitere Tests von abackup status und abackup changes
+- Erlaube von Verzeichnisnamen mit Leerzeichen, mit und ohne trailing /
+- Test von gemounteten USB Platten: Was passiert, wenn der Mount nicht geklappt hat? 
+- Integration in Apraxos: Fehlerbehandlung? Soll Backup beim beenden der letzten Session getriggert werden?
+- Einschränkungen dokumentieren: Z.B. NFS
