@@ -1,6 +1,8 @@
+#!/bin/bash
+
 source backup.cfg
  
-rm -rf test backup_timestamp
+rm -rf test backup_timestamp /tmp/abackup-test-nonrelative
 
 sources=(${sourcefolders//,/ })
 destsr=(${destfolders_rolling//,/ })
@@ -23,39 +25,48 @@ sources[1]=$(realpath --relative-to . ${sources[1]})
 ./abackup.sh run
 
 echo "###### test if destination file test1 exists in rolling backup folder"
-echo ${destsr[0]}/${sources[0]}/test1.txt
 if [[ ( ! -f ${destsr[0]}/${sources[0]}/test1.txt ) ||  ( ! -f ${destsr[1]}/${sources[0]}/test1.txt ) ]]; then
     echo failled && exit 1
 fi
 
 echo "###### test if destination file test1 exists in differential backup folder"
-echo ${destsd[0]}/../last/${sources[0]}/test1.txt
-echo ${destsd[1]}/../last/${sources[0]}/test1.txt
 if [[ ( ! -f ${destsd[0]}/${sources[0]}/test1.txt ) || ( ! -f ${destsd[1]}/${sources[0]}/test1.txt ) ]]; then    
     echo failled1 && exit 1
 fi
 
 echo "###### test if destination file test1 exists in differential last backup folder"
-echo ${destsd[0]}/../last/${sources[0]}/test1.txt
 if [[ ( ! -f ${destsd[0]}/../last/${sources[0]}/test1.txt ) || ( ! -f ${destsd[1]}/../last/${sources[0]}/test1.txt ) ]]; then    
     echo failled2 && exit 1
 fi
 
+# simulate some changes
 echo test2b > ${sources[0]}/test2.txt
 echo test3 > ${sources[0]}/test3.txt
 
+# workaround: macOS does not use GNU date as default but has gdate installed
+datecmd=date
+command -v gdate >/dev/null 2>&1 && datecmd=gdate
+
 # test tomorrow
-dr=$(realpath -m --relative-to=. ${destsr[0]}/../`date -v+1d +%A`)/
-dd=$(realpath -m --relative-to=. ${destsd[0]}/../`date -v+1d +%Y-%m-%d-%H%M`)/
+tomorrow=$($datecmd --date="-1 days ago" +%Y-%m-%d-%H%M)
+tomorrow_wd=$($datecmd --date="-1 days ago" +%A)
+dd=$(realpath -m --relative-to=. ${destsd[0]}/../${tomorrow})/
+dr=$(realpath -m --relative-to=. ${destsr[0]}/../${tomorrow_wd})/
+
 ./abackup.sh run \
     --destfolders_rolling $dr \
     --destfolders_diff $dd
+
+# simulate some changes
 echo test4 > ${sources[0]}/test4.txt
 echo ${sources[0]}/test4.txt
 
 # test the day after tomorrow (without trailing slashes)
-dr=$(realpath -m --relative-to=. ${destsr[0]}/../`date -v+2d +%A`)
-dd=$(realpath -m --relative-to=. ${destsd[0]}/../`date -v+2d +%Y-%m-%d-%H%M`)
+tomorrow=$($datecmd --date="-2 days ago" +%Y-%m-%d-%H%M)
+tomorrow_wd=$($datecmd --date="-2 days ago" +%A)
+dd=$(realpath -m --relative-to=. ${destsd[0]}/../${tomorrow})
+dr=$(realpath -m --relative-to=. ${destsr[0]}/../${tomorrow_wd})
+
 ./abackup.sh run \
     --destfolders_rolling $dr \
     --destfolders_diff $dd

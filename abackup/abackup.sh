@@ -177,7 +177,7 @@ if [[ -n $STATUS ]]; then
     doneh=$(date -r ${backuptimestamp}_done +%Y-%m-%d-%H%M%S)
     echo "last backup"
     echo "  started ${startedh}"
-    echo "  done ${doneh}"
+    echo "  done    ${doneh}"
 
     started=$(date -r ${backuptimestamp} +%s)
     done=$(date -r ${backuptimestamp}_done  +%s)
