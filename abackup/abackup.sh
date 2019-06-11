@@ -59,6 +59,8 @@ function differential_backup {
         linkdestopt=
     fi
     
+    mkdir -p ${_destfolder} ${logfolder}
+
     set -x
     echo "****** differential backup start ${_sourcefolder} --> ${_destfolder} ******" >> ${logfolder}/differential-${now}.log
     rsync ${rsyncopts} --log-file=${logfolder}/differential-${now}.log "${_sourcefolder}"  "${_destfolder}" $linkdestopt
@@ -106,11 +108,6 @@ case $key in
 esac
 done
 set -- "${OTHER[@]}"
-
-if [[ -n $HELP ]]; then
-    echo "possible commands: status, run, changes"
-    exit 0
-fi
 
 source backup.cfg
 
@@ -161,9 +158,8 @@ if [[ -n $RUN ]]; then
     done
 
     touch ${backuptimestamp}_done
-fi
 
-if [[ -n $STATUS ]]; then
+elif [[ -n $STATUS ]]; then
     if [[ ! -f ${backuptimestamp} ]]; then 
         echo "no started backup found"
         exit 1
@@ -204,9 +200,8 @@ if [[ -n $STATUS ]]; then
     fi
 
     exit 0
-fi
 
-if [[ -n $CHANGES ]]; then
+elif [[ -n $CHANGES ]]; then
 
     sources=(${sourcefolders//,/ })
 
@@ -216,4 +211,12 @@ if [[ -n $CHANGES ]]; then
     done
 
     exit 0
+
+elif [[ -n $HELP ]]; then
+    echo "possible commands: status, run, changes"
+    exit 0
+
+else 
+    echo "run with argument -h for help"
+    exit 1
 fi

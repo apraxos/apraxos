@@ -64,7 +64,7 @@ Konfiguration, siehe backup.cfg !
 - Fehlerausgabe aktuell in stdout (ToDo: errout?)
 
 .abackup.sh run
-- rsync zur rollierenden Wochentagssicherung
+- rsync zur rollierenden Wochentagssicherung und/oder
 - rsync zur differentiellen täglichen Sicherung 
 - das Fehler- und Statusprotokoll wird gespeichert
 - ein backup_timestamp wird erzeugt
@@ -83,14 +83,14 @@ Konfiguration, siehe backup.cfg !
 .abackup.sh uninstall
 - tbd
 
-Wie mache ich jetzt ein Backup?
+_Wie mache ich jetzt ein Backup?_
 
 [source,bash]
 ----
 abackup.sh run
 ----
 
-Wie prüft man ob das Backup ok ist?
+_Wie prüft man ob das Backup ok ist?_
 
 [source,bash]
 ----
@@ -98,27 +98,42 @@ login abackup
 abackup.sh status
 ----
 
-Wie recherchiert man im Stand vom letzten Mittwoch?
+== Konfiguration
 
-[source,bash]
-----
-login abackup
-cd mnt/Mittwoch/a
-./apraxos64.unx
-----
+_Wie konfiguriere ich ein einfaches differenzielles platzsparendes Backup mit Tagesstempel?_ 
 
-Wie kann man den Stand vom letzten Mittwoch wiederherstellen? z.B. so:
-
-[source,bash]
+.backup.cfg 
 ----
-login praxis
-mv a a.kaputt
-cp -a /home/abackup/mnt/we/a .
+sourcefolders=a/
+_today=$(date +%Y-%m-%d-%H%M)
+destfolders_diff=/media/usb-backup/${_today}/
+logfolder=/media/usb-backup/log
+backuptimestamp=./backup_timestamp
+rsyncopts='-aR --delete --stats --exclude=${backuptimestamp}'
 ----
 
-Wie kann man den Stand von vor x Wochen (z.B. KW 18) wiederherestellen? z.B. so
+_Wie konfiguriere ich ein rollierendes Backup mit 7 USB Festplatten - für jeden Wochentag eine?_
 
-tbd
+Es müssen 7 Festplatten gemountet werden:
+
+ /media/usb-backup-Montag
+ /media/usb-backup-Dienstag
+ /media/usb-backup-Mittwoch
+ /media/usb-backup-Donnerstag
+ /media/usb-backup-Freitag
+ /media/usb-backup-Samstag
+ /media/usb-backup-Sonntag
+ 
+.backup.cfg 
+----
+sourcefolders=a/
+_weekday=`LC_ALL=de_DE date '+%A'`
+destfolders_rolling=/media/usb-backup-${_weekday}/
+logfolder=/media/usb-backup-${_weekday}/log
+backuptimestamp=./backup_timestamp
+rsyncopts='-aR --delete --stats --exclude=${backuptimestamp}'
+----
+
 
 == abackup.sh test
 
