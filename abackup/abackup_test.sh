@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source backup.cfg
+source backup.cfg.test
  
 rm -rf test backup_timestamp /tmp/abackup-test-nonrelative
 
@@ -22,7 +22,8 @@ done
 sources[0]=$(realpath --relative-to . ${sources[0]})
 sources[1]=$(realpath --relative-to . ${sources[1]})
 
-./abackup.sh run
+./abackup.sh run \
+    --config ./backup.cfg.test
 
 echo "###### test if destination file test1 exists in rolling backup folder"
 if [[ ( ! -f ${destsr[0]}/${sources[0]}/test1.txt ) ||  ( ! -f ${destsr[1]}/${sources[0]}/test1.txt ) ]]; then
@@ -55,7 +56,8 @@ dr=$(realpath -m --relative-to=. ${destsr[0]}/../${tomorrow_wd})/
 
 ./abackup.sh run \
     --destfolders_rolling $dr \
-    --destfolders_diff $dd
+    --destfolders_diff $dd \
+    --config ./backup.cfg.test
 
 # simulate some changes
 echo test4 > ${sources[0]}/test4.txt
@@ -69,7 +71,8 @@ dr=$(realpath -m --relative-to=. ${destsr[0]}/../${tomorrow_wd})
 
 ./abackup.sh run \
     --destfolders_rolling $dr \
-    --destfolders_diff $dd
+    --destfolders_diff $dd \
+    --config ./backup.cfg.test
 
 echo "###### list hard linked files"
 find . -links +1 ! -type d -print
@@ -88,7 +91,9 @@ echo "###### test status failure on two changed files since last backup"
 sleep 1
 touch ${sources[0]}/test2.txt
 touch ${sources[0]}/test3.txt
-./abackup.sh status
+./abackup.sh status \
+    --config ./backup.cfg.test
+
 if [[ $? -ne 4 ]]; then 
     echo failled && exit 1
 fi

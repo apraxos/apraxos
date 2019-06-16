@@ -5,6 +5,12 @@ set -e
 # avoid globbing
 set -f  
 
+# all folders must be relative to this script 
+cd $( dirname $0 )
+
+# default env variables, can be overwitten in backup.cfg:
+backuptimestamp=./backup_timestamp
+
 # check_folder ${name} ${folder}
 function check_folder {
     _name=$1
@@ -79,13 +85,18 @@ case $key in
     HELP="1"
     shift
     ;;
-    --destfolders_diff)
+    -d|--destfolders_diff)
     DESTFOLDERS_DIFF=("$2")
     shift
     shift
     ;;
-    --destfolders_rolling)
+    -r|--destfolders_rolling)
     DESTFOLDERS_ROLLING=("$2")
+    shift
+    shift
+    ;;
+    -c|--config)
+    BACKUP_CFG=("$2")
     shift
     shift
     ;;
@@ -109,7 +120,11 @@ esac
 done
 set -- "${OTHER[@]}"
 
-source backup.cfg
+if [[ -n $BACKUP_CFG ]]; then
+    source $BACKUP_CFG
+else
+    source backup.cfg
+fi
 
 if [[ -n $DESTFOLDERS_DIFF ]]; then
     destfolders_diff=$DESTFOLDERS_DIFF
@@ -213,7 +228,7 @@ elif [[ -n $CHANGES ]]; then
     exit 0
 
 elif [[ -n $HELP ]]; then
-    echo "possible commands: status, run, changes"
+    echo "usage: abackup.sh [status|run|changes] [--backup_cfg filename]"
     exit 0
 
 else 

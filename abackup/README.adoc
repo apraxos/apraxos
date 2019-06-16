@@ -108,8 +108,7 @@ sourcefolders=a/
 _today=$(date +%Y-%m-%d-%H%M)
 destfolders_diff=/media/usb-backup/${_today}/
 logfolder=/media/usb-backup/log
-backuptimestamp=./backup_timestamp
-rsyncopts='-aR --delete --stats --exclude=${backuptimestamp}'
+rsyncopts='-aR --delete --stats --exclude-from=./backup_exclude.cfg'
 ----
 
 _Wie konfiguriere ich ein rollierendes Backup mit 7 USB Festplatten - für jeden Wochentag eine?_
@@ -130,10 +129,26 @@ sourcefolders=a/
 _weekday=`LC_ALL=de_DE date '+%A'`
 destfolders_rolling=/media/usb-backup-${_weekday}/
 logfolder=/media/usb-backup-${_weekday}/log
-backuptimestamp=./backup_timestamp
-rsyncopts='-aR --delete --stats --exclude=${backuptimestamp}'
+rsyncopts='-aR --delete --stats --exclude-from=./backup_exclude.cfg
 ----
 
+_Wie schließe ich Files vom Backup aus?_
+
+Das exclude File ``backup_exclude.cfg`` beinhaltet die für das Apraxos Backup bekannten unnötigen Files.
+
+.backup_exclude.cfg 
+----
+./backup_timestamp
+a/*.bak
+a/*.ink
+a/*.cdx
+...
+----
+
+_Wo finde ich weitere Beispiele?_
+
+* backup.cfg.test: ein komplexes Beispiel, welches die meisten Konfigurationsmöglichen beinhaltet
+* backup.cfg.nfs: ein einfaches Beispiel, welches zum Backup auf einen großen Fileshare Verwendung findet. Es wird hier auch geprüft, ob der Share wirklich gemountet ist. 
 
 == abackup.sh test
 
