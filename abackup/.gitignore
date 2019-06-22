@@ -1,3 +1,5 @@
 test/
 backup_timestamp
 backup_timestamp_done
+*.pdf
+*.tgz

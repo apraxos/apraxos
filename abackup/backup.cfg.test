@@ -19,4 +19,4 @@ destfolders_rolling=test/backup_rolling/${_weekday}/,test/backup_rolling2/
 logfolder=test/log
 
 # verwendete rsync Optionen (siehe rsync Manual!)
-rsyncopts='-aR --delete --stats --exclude-from=./backup_exclude.cfg'
+# rsyncopts='-aR --delete --stats --exclude-from=./backup_exclude.cfg'

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# all folders must be relative to this script 
+cd $( dirname $0 )
+
 source backup.cfg.test
  
 rm -rf test backup_timestamp /tmp/abackup-test-nonrelative

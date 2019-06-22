@@ -1,0 +1,28 @@
+jobs:
+  include:
+    - stage: test
+      services:
+      - docker
+      before_install:
+      - docker build -t apraxos/apraxos .
+      script:
+      - docker run --rm -v $(pwd):/home/praxis/ apraxos/apraxos /home/praxis/abackup/abackup_test.sh
+
+    - stage: build
+      services:
+      - docker
+      before_install:
+      - docker pull asciidoctor/docker-asciidoctor
+      script:
+      - docker run --rm -v $(pwd)/docs:/documents/ asciidoctor/docker-asciidoctor asciidoctor-pdf index.adoc
+      - tar cvfz abackup.tgz LICENSE docs/index.pdf abackup/abackup.sh abackup/backup_exclude.cfg abackup/LICENSE abackup/backup.cfg.*
+    
+    - stage: GitHub Release
+      deploy:
+        provider: releases
+        api_key:
+          secure: Eucv6ICYBKCP5Jot1K314yNyphNWvUdxXUCfPaVsAsytpaYJ/IgkVoXrhVfdqYaiq19nk0RbfpPPQJYSKpAfcC0YfJDNkHvMVBeRdjAGfbO5H7yAXkzVCSgVWPThpqlozBO1HoTUk3/GIDbrEq/QzLPU3oCIYPGdw6v8l9JhWVQHyJZVZn6sS7XCLibEYz/mWvqK3rIHi4oo6mTlv2oSjocBOp9nFHoxO1PgKN4/j4O9SouHJbFIdjxvZcqL1dTSFPbnYvqc9Avgx0qpYipgILNWFOvY2uL3e7Ix6doxU4XkoygzjkmtYX5tKme5AWnZKqlB/QP9T7YlTnKGuWPkx+765I+RtMi6LXdgKn8PFVI06Z5r7Ts08RLlKGOZrOBJMfdz2k/wNc0e6j9WcOfjUh+bYdI5JFuKFANS5U+b7OmAuC+ueqrBxY/JOddkIhF33Wat5ibb4MMFjLPg7avCWSDvcbyp8H4Hl+vropPg9EKQ5jJpdOsinO16gEonP7ncpYT6vF5LvvyFVOj3HbWDAKbi+umfm1pjTvfZNBVA7UenVzGALbAMo0WibVKTnNdZszH3H9dgj7n8FpRH7gTbfZ0PxnIZH9Hq6lKuGYc1eNqZKpzCi8Tfe/T4Il23j67FaTIchhmS5AajEJ6QdWUunRnHrVvyG1fsRvvcutrPCLE=
+        file: apraxos.tgz
+        on:
+          repo: apraxos/apraxos
+          branch: backup

@@ -1,0 +1,14 @@
+image:images/headerimg.jpg[apraxos]
+
+:toc-title: Inhaltsverzeichnis
+
+:toc:
+
+:numbered:
+
+[[section-installation]]
+==	Die Einrichtung von apraxos
+
+<<<<
+include::../abackup/docs/abackup.adoc[]
+

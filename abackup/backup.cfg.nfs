@@ -30,5 +30,3 @@ _weekday=`LC_ALL=de_DE date '+%A'`
 destfolders_rolling=${_dest}/rolling/${_weekday}/
 
 logfolder=/home/praxis/usbsafe/abackup/log/
-
-rsyncopts='-aR --delete --stats --exclude-from=./backup_exclude.cfg'

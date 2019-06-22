@@ -1,0 +1,4 @@
+sourcefolders=~/a/
+_today=$(date +%Y-%m-%d-%H%M)
+destfolders_diff=/media/usb-backup/${_today}/
+logfolder=/media/usb-backup/log
