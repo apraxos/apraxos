@@ -1,0 +1,4 @@
+image:https://travis-ci.com/apraxos/apraxos.svg?branch=backup["Build Status", link="https://travis-ci.com/apraxos/apraxos"]
+
+# apraxos
+Open source office mangement program for medicine in Germany 
