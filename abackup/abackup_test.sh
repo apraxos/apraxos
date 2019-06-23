@@ -120,5 +120,15 @@ if [[ $? -ne 0 ]]; then
     echo failled && exit 1
 fi
 
+echo "###### test status with source folder and exclude with ignored changes"
+./abackup.sh status \
+    --sourcefolders ${sources[0]} \
+    --config ./backup.cfg.test \
+    --exclude "${sources[0]}/*.txt"
+
+if [[ $? -ne 0 ]]; then 
+    echo failled && exit 1
+fi
+
 echo ""
 echo "###### all tests successful"

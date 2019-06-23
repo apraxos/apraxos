@@ -39,7 +39,7 @@ function rolling_backup {
 
     set -x
     echo "****** rolling backup start ${_sourcefolder} --> ${_destfolder} *******" >> ${logfolder}/rolling-${_now}.log
-    rsync ${rsyncopts} --stats --log-file=${logfolder}/rolling-${_now}.log "${_sourcefolder}" "${_destfolder}"
+    rsync ${rsyncopts} ${exclude} --stats --log-file=${logfolder}/rolling-${_now}.log "${_sourcefolder}" "${_destfolder}"
     echo "****** rolling backup end ${_sourcefolder} --> ${_destfolder} *******" >> ${logfolder}/rolling-${_now}.log
     set +x
 }  
@@ -70,7 +70,7 @@ function differential_backup {
 
     set -x
     echo "****** differential backup start ${_sourcefolder} --> ${_destfolder} ******" >> ${logfolder}/differential-${now}.log
-    rsync ${rsyncopts} --stats --log-file=${logfolder}/differential-${now}.log "${_sourcefolder}"  "${_destfolder}" $linkdestopt
+    rsync ${rsyncopts} ${exclude} --stats --log-file=${logfolder}/differential-${now}.log "${_sourcefolder}"  "${_destfolder}" $linkdestopt
     ln -nsf "${_destfolder}" "${_destfolder_last}"
     echo "****** differential backup end ${_sourcefolder} --> ${_destfolder} ******" >> ${logfolder}/differential-${now}.log
     set +x
@@ -98,6 +98,11 @@ case $key in
     ;;
     -r|--destfolders_rolling)
     DESTFOLDERS_ROLLING=("$2")
+    shift
+    shift
+    ;;
+    -e|--exclude)
+    EXCLUDE=("$2")
     shift
     shift
     ;;
@@ -141,6 +146,9 @@ fi
 if [[ -n $DESTFOLDERS_ROLLING ]]; then
     destfolders_rolling=$DESTFOLDERS_ROLLING
 fi
+if [[ -n $EXCLUDE ]]; then
+    exclude=$EXCLUDE
+fi
 
 _destfolders_all=$destfolders_diff
 if [[ -n $_destfolders_all ]]; then
@@ -149,6 +157,9 @@ if [[ -n $_destfolders_all ]]; then
     fi
 else
     _destfolders_all=$destfolders_rolling 
+fi
+if [[ -n $exclude ]]; then
+    exclude="--exclude $exclude"
 fi
 
 if [[ -n $1 ]]; then
@@ -232,7 +243,7 @@ elif [[ -n $STATUS ]]; then
         dests=(${_destfolders_all//,/ })
         for dest in "${dests[@]}"
         do
-            changed=$(rsync --dry-run --stats ${rsyncopts} "${source}" "${dest}" | grep "Number of files transferred:" | sed -E "s/Number of files transferred: //")
+            changed=$(rsync --dry-run --stats ${rsyncopts} ${exclude} "${source}" "${dest}" | grep "Number of files transferred:" | sed -E "s/Number of files transferred: //")
             changedCount=$(( $changedCount + $changed ))
         done
     done
@@ -259,7 +270,7 @@ elif [[ -n $CHANGES ]]; then
         do
             echo "****** changes start ${source} --> ${dest} ******"
             # set -x
-            rsync --dry-run --verbose ${rsyncopts} "${source}" "${dest}"
+            rsync --dry-run --verbose ${rsyncopts} ${exclude} "${source}" "${dest}"
             # set +x
             echo "****** changes end ${source} --> ${dest} ******"
         done
@@ -268,7 +279,7 @@ elif [[ -n $CHANGES ]]; then
     exit 0
 
 elif [[ -n $HELP ]]; then
-    echo "usage: abackup.sh [status|run|changes] [--config|-c filename] [--destfolders_diff|-d folderlist] [--destfolders_rolling|-r folderlist]"
+    echo "usage: abackup.sh [status|run|changes] [--config|-c filename] [--sourcefolders|-s folderlist] [--destfolders_diff|-d folderlist] [--destfolders_rolling|-r folderlist] [--exclude|-e filesorfolders]"
     exit 0
 
 else 
