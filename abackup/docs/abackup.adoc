@@ -110,18 +110,3 @@ _Wo finde ich weitere Beispiele?_
 ----
 abackup_test.sh
 ----
-
-==== Offene Punkte
-
-- Dokumentation mit Beispielen und Diagrammen
-- Fehlermeldungen maschienenverarbeitbar: Exit Code + Stdout (oder Stderr) ?
-- Test Replizierung zu entfernten NAS über SSH 
-- weitere Tests von abackup status und abackup changes
-- Erlaube von Verzeichnisnamen mit Leerzeichen, mit und ohne trailing /
-- Test von gemounteten USB Platten: Was passiert, wenn der Mount nicht geklappt hat? 
-- Integration in Apraxos: Fehlerbehandlung? Soll Backup beim beenden der letzten Session getriggert werden?
-- Einschränkungen dokumentieren: Z.B. NFS
-- die Status-Meldung benutzt noch find. Das kann zum Fehler führen dass lost+found nicht lesbar ist. Das sollte auf rsync -nav ... umgestellt werden. In die Excludes sollte dann
-wahrscheinlich auch backup_timestamp_done.
-- weitere Fehlerbehandlungen: last hängt in der Luft, letztes Backup nicht beendet.
-- alle sources können mit einem rsync command getriggert werden
