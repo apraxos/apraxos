@@ -86,6 +86,11 @@ case $key in
     HELP="1"
     shift
     ;;
+    -s|--sourcefolders)
+    SOURCEFOLDERS=("$2")
+    shift
+    shift
+    ;;
     -d|--destfolders_diff)
     DESTFOLDERS_DIFF=("$2")
     shift
@@ -127,6 +132,9 @@ else
     source backup.cfg
 fi
 
+if [[ -n $SOURCEFOLDERS ]]; then
+    sourcefolders=$SOURCEFOLDERS
+fi
 if [[ -n $DESTFOLDERS_DIFF ]]; then
     destfolders_diff=$DESTFOLDERS_DIFF
 fi
@@ -213,12 +221,14 @@ elif [[ -n $STATUS ]]; then
     changedCount=0
     for source in "${sources[@]}"
     do
+        source=$(realpath --relative-base . $source)
         newer=$(find ${source} -newer ${backuptimestamp} | wc -l )
         newerCount=$(( $newerCount + $newer ))
     done
 
     for source in "${sources[@]}"
     do
+        source=$(realpath --relative-base . $source)
         dests=(${_destfolders_all//,/ })
         for dest in "${dests[@]}"
         do
@@ -243,19 +253,22 @@ elif [[ -n $CHANGES ]]; then
 
     for source in "${sources[@]}"
     do
+        source=$(realpath --relative-base . $source)
         dests=(${_destfolders_all//,/ })
         for dest in "${dests[@]}"
         do
+            echo "****** changes start ${source} --> ${dest} ******"
             # set -x
             rsync --dry-run --verbose ${rsyncopts} "${source}" "${dest}"
             # set +x
+            echo "****** changes end ${source} --> ${dest} ******"
         done
     done
 
     exit 0
 
 elif [[ -n $HELP ]]; then
-    echo "usage: abackup.sh [status|run|changes] [--config filename]"
+    echo "usage: abackup.sh [status|run|changes] [--config|-c filename] [--destfolders_diff|-d folderlist] [--destfolders_rolling|-r folderlist]"
     exit 0
 
 else 

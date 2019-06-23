@@ -101,5 +101,24 @@ if [[ $? -ne 4 ]]; then
     echo failled && exit 1
 fi
 
+echo "###### test status with source folder with changes"
+./abackup.sh status \
+    --sourcefolders ${sources[0]} \
+    --config ./backup.cfg.test
+
+if [[ $? -ne 4 ]]; then 
+    echo failled && exit 1
+fi
+
+echo "###### test status with source folder without changes"
+
+./abackup.sh status \
+    --sourcefolders ${sources[1]} \
+    --config ./backup.cfg.test
+
+if [[ $? -ne 0 ]]; then 
+    echo failled && exit 1
+fi
+
 echo ""
 echo "###### all tests successful"
