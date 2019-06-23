@@ -43,6 +43,14 @@ if [[ ( ! -f ${destsd[0]}/../last/${sources[0]}/test1.txt ) || ( ! -f ${destsd[1
     echo failled2 && exit 1
 fi
 
+echo "###### test status with source folder without changes"
+./abackup.sh status \
+    --sourcefolders ${sources[0]} \
+    --config ./backup.cfg.test
+if [[ $? -ne 0 ]]; then 
+    echo failled && exit 1
+fi
+
 # simulate some changes
 echo test2b > ${sources[0]}/test2.txt
 echo test3 > ${sources[0]}/test3.txt
@@ -90,6 +98,7 @@ if [[ 0 -ne $(find . -links +1 ! -type d -print | grep test4.txt | wc -l) ]]; th
     echo failled && exit 1
 fi
 
+
 echo "###### test status failure on two changed files since last backup"
 sleep 1
 touch ${sources[0]}/test2.txt
@@ -107,16 +116,6 @@ echo "###### test status with source folder with changes"
     --config ./backup.cfg.test
 
 if [[ $? -ne 4 ]]; then 
-    echo failled && exit 1
-fi
-
-echo "###### test status with source folder without changes"
-
-./abackup.sh status \
-    --sourcefolders ${sources[1]} \
-    --config ./backup.cfg.test
-
-if [[ $? -ne 0 ]]; then 
     echo failled && exit 1
 fi
 
