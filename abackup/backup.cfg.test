@@ -1,0 +1,22 @@
+# Liste von Komma getrennten Quell Verzeichnissen, die gesichert werden müssen:
+sourcefolders=test/a/,/tmp/abackup-test-nonrelative
+
+# Differenzielles platzsparendes tägliches Backup. 
+# Alle Backups müssen auf der selben Festplatte liegen. 
+# Das unterste Verzeichnis muss die Tagesstände beinhalten (z.B. .../${_today}/).
+# Das letzte backup wird mit dem Link last markiert. 
+_today=$(date +%Y-%m-%d-%H%M)
+destfolders_diff=test/backup_diff/${_today}/,test/backup_diff2/${_today}/
+
+# Ein Rollierendes vollständiges Backup mit Wochentag Namen.
+# Das Ziel wird einmal die Woche überschrieben und landet im WEEKDAY Unterorder.
+# Die einzelnen Wochentage dürfen auf unterschiedliche Festplatten geschrieben werden.
+# destfolders_rolling auf leer setzen, falls kein rollierendes Backup erfolgen soll.
+_weekday=`LC_ALL=de_DE date '+%A'`
+destfolders_rolling=test/backup_rolling/${_weekday}/,test/backup_rolling2/
+
+# Backup Protokolle
+logfolder=test/log
+
+# verwendete rsync Optionen (siehe rsync Manual!)
+# rsyncopts='-aR --delete --stats --exclude-from=./backup_exclude.cfg'

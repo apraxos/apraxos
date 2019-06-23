@@ -1,4 +1,6 @@
-image:https://travis-ci.com/apraxos/apraxos.svg?branch=backup["Build Status", link="https://travis-ci.com/apraxos/apraxos"]
+image:https://travis-ci.org/apraxos/apraxos.svg?branch=master["Build Status", link="https://travis-ci.org/apraxos/apraxos"]
 
 # apraxos
 Open source office mangement program for medicine in Germany 
+
+This repository contains some software modules that are required by apraxos.
