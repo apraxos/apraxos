@@ -124,3 +124,4 @@ abackup_test.sh
 - die Status-Meldung benutzt noch find. Das kann zum Fehler führen dass lost+found nicht lesbar ist. Das sollte auf rsync -nav ... umgestellt werden. In die Excludes sollte dann
 wahrscheinlich auch backup_timestamp_done.
 - weitere Fehlerbehandlungen: last hängt in der Luft, letztes Backup nicht beendet.
+- alle sources können mit einem rsync command getriggert werden

@@ -10,7 +10,7 @@ cd $( dirname $0 )
 
 # default env variables, can be overwitten in backup.cfg:
 backuptimestamp=./backup_timestamp
-rsyncopts='-aR --delete --stats --exclude-from=./backup_exclude.cfg'
+rsyncopts='-aR --delete --exclude-from=./backup_exclude.cfg'
 
 # check_folder ${name} ${folder}
 function check_folder {
@@ -39,7 +39,7 @@ function rolling_backup {
 
     set -x
     echo "****** rolling backup start ${_sourcefolder} --> ${_destfolder} *******" >> ${logfolder}/rolling-${_now}.log
-    rsync ${rsyncopts} --log-file=${logfolder}/rolling-${_now}.log "${_sourcefolder}" "${_destfolder}"
+    rsync ${rsyncopts} --stats --log-file=${logfolder}/rolling-${_now}.log "${_sourcefolder}" "${_destfolder}"
     echo "****** rolling backup end ${_sourcefolder} --> ${_destfolder} *******" >> ${logfolder}/rolling-${_now}.log
     set +x
 }  
@@ -70,7 +70,7 @@ function differential_backup {
 
     set -x
     echo "****** differential backup start ${_sourcefolder} --> ${_destfolder} ******" >> ${logfolder}/differential-${now}.log
-    rsync ${rsyncopts} --log-file=${logfolder}/differential-${now}.log "${_sourcefolder}"  "${_destfolder}" $linkdestopt
+    rsync ${rsyncopts} --stats --log-file=${logfolder}/differential-${now}.log "${_sourcefolder}"  "${_destfolder}" $linkdestopt
     ln -nsf "${_destfolder}" "${_destfolder_last}"
     echo "****** differential backup end ${_sourcefolder} --> ${_destfolder} ******" >> ${logfolder}/differential-${now}.log
     set +x
@@ -134,6 +134,14 @@ if [[ -n $DESTFOLDERS_ROLLING ]]; then
     destfolders_rolling=$DESTFOLDERS_ROLLING
 fi
 
+_destfolders_all=$destfolders_diff
+if [[ -n $_destfolders_all ]]; then
+    if [[ -n $destfolders_rolling ]]; then
+        _destfolders_all="$_destfolders_all,$destfolders_rolling"
+    fi
+else
+    _destfolders_all=$destfolders_rolling 
+fi
 
 if [[ -n $1 ]]; then
     echo "unknown additional arguments:" $1
@@ -201,17 +209,29 @@ elif [[ -n $STATUS ]]; then
     fi
 
     sources=(${sourcefolders//,/ })
-    count=0
+    newerCount=0
+    changedCount=0
     for source in "${sources[@]}"
     do
-        c=$(find ${source} -newer ${backuptimestamp} | wc -l )
-        count=$(( $count + $c ))
+        newer=$(find ${source} -newer ${backuptimestamp} | wc -l )
+        newerCount=$(( $newerCount + $newer ))
+    done
+
+    for source in "${sources[@]}"
+    do
+        dests=(${_destfolders_all//,/ })
+        for dest in "${dests[@]}"
+        do
+            changed=$(rsync --dry-run --stats ${rsyncopts} "${source}" "${dest}" | grep "Number of files transferred:" | sed -E "s/Number of files transferred: //")
+            changedCount=$(( $changedCount + $changed ))
+        done
     done
 
     echo ""
-    echo "There are ${count} newer files since last backup!"
+    echo "There are ${newerCount} newer files since last backup!"
+    echo "There are ${changedCount} files that need to be transferred since last backup!"
 
-    if [[ "${count}" -gt "0" ]]; then
+    if [[ "${changedCount}" -gt "0" ]]; then
         exit 4
     fi
 
@@ -223,13 +243,19 @@ elif [[ -n $CHANGES ]]; then
 
     for source in "${sources[@]}"
     do
-        find ${source} -newer ${backuptimestamp}
+        dests=(${_destfolders_all//,/ })
+        for dest in "${dests[@]}"
+        do
+            # set -x
+            rsync --dry-run --verbose ${rsyncopts} "${source}" "${dest}"
+            # set +x
+        done
     done
 
     exit 0
 
 elif [[ -n $HELP ]]; then
-    echo "usage: abackup.sh [status|run|changes] [--backup_cfg filename]"
+    echo "usage: abackup.sh [status|run|changes] [--config filename]"
     exit 0
 
 else 
