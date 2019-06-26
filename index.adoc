@@ -10,5 +10,5 @@ image:images/headerimg.jpg[apraxos]
 ==	Die Einrichtung von apraxos
 
 <<<<
-include::../abackup/docs/abackup.adoc[]
+include::abackup/docs/abackup.adoc[]
 
