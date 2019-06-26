@@ -15,7 +15,6 @@ jobs:
     script:
     - docker run --rm -v $(pwd)/docs:/documents/ asciidoctor/docker-asciidoctor asciidoctor-pdf index.adoc
     - tar cvfz abackup.tgz LICENSE docs/index.pdf abackup/abackup.sh abackup/backup_exclude.cfg abackup/LICENSE abackup/backup.cfg.*
-  - stage: GitHub Release
     deploy:
       provider: releases
       skip_cleanup: true
@@ -23,5 +22,5 @@ jobs:
         secure: sjy3NVq38OMH8q6LKK/ix0M496S8XDnE+SSQd0m2ME5oBd6wIBlSfMDT/53PWQcKmE6jANdGcUzyUwrbkLpCu3v1BZznn/TJGvUhC7SNVomMLkbMrDdSw0AC4xDln83fjqxyaP6o8XihLmAxfgceMYclkQisyo5hLJzF5lOvBhd5sCr/ydaGG62nosEibAtyIHZ7X6YYGBm9LcLPkOtPgix7p1mHABcCaznX9yeLhhhtM+ZWMeaeUEqYA9knFjNvJsuFwixyWobDn/3MQCDEJxnGEe+r2TnVQxBmff1c8mXlGJlkqZuwDkPPfXqm8wt9QNn9NMFh8cVEduKSwh7aa/RQN70s/9lIWqF1+mgUCKYj/TTyA0SEJ/lAVeIavWE1LqgyPJ6N+KGWynWesXz7NIIv+U+MUuYvSNl2eSmQvuKI1OoY3mKZkWUNsAs6BElmmnONGSbLDmehlke2b34VT8Jw1Efw/di0VQkHPXlC18VjT4UGsRIeIyxR/Cs/NifselCKuOVWn+VUpEFOf/+q9+siM8Ddqqy/89U9VHQdOrOSaLxCGbX5btvuRLZTVSRGoIPH6+hSlB/HfX9IQJJd12tu9LIrMaHnqg+gIAYJSF/3ZkVttEKW4cpXn6/BTaGKXkNzNHzItrmAnpBhfAHUcLEB+zundVJ51u0jm8pbVRY=
       file: 
       - abackup.tgz
-     
-
+      on:
+        tags: true
