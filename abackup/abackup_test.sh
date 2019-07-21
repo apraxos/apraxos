@@ -9,7 +9,7 @@ rm -rf test backup_timestamp /tmp/abackup-test-nonrelative
 
 sources=(${sourcefolders//,/ })
 destsr=(${destfolders_rolling//,/ })
-destsd=(${destfolders_diff//,/ })
+destsd=(${destfolders_incr//,/ })
 
 destsr[0]=$(realpath -m --relative-to . ${destsr[0]})
 destsr[1]=$(realpath -m --relative-to . ${destsr[1]})
@@ -33,12 +33,12 @@ if [[ ( ! -f ${destsr[0]}/${sources[0]}/test1.txt ) ||  ( ! -f ${destsr[1]}/${so
     echo failled && exit 1
 fi
 
-echo "###### test if destination file test1 exists in differential backup folder"
+echo "###### test if destination file test1 exists in incremental backup folder"
 if [[ ( ! -f ${destsd[0]}/${sources[0]}/test1.txt ) || ( ! -f ${destsd[1]}/${sources[0]}/test1.txt ) ]]; then    
     echo failled1 && exit 1
 fi
 
-echo "###### test if destination file test1 exists in differential last backup folder"
+echo "###### test if destination file test1 exists in incremental last backup folder"
 if [[ ( ! -f ${destsd[0]}/../last/${sources[0]}/test1.txt ) || ( ! -f ${destsd[1]}/../last/${sources[0]}/test1.txt ) ]]; then    
     echo failled2 && exit 1
 fi
@@ -67,7 +67,7 @@ dr=$(realpath -m --relative-to=. ${destsr[0]}/../${tomorrow_wd})/
 
 ./abackup.sh run \
     --destfolders_rolling $dr \
-    --destfolders_diff $dd \
+    --destfolders_incr $dd \
     --config ./backup.cfg.test
 
 # simulate some changes
@@ -82,18 +82,18 @@ dr=$(realpath -m --relative-to=. ${destsr[0]}/../${tomorrow_wd})
 
 ./abackup.sh run \
     --destfolders_rolling $dr \
-    --destfolders_diff $dd \
+    --destfolders_incr $dd \
     --config ./backup.cfg.test
 
 echo "###### list hard linked files"
 find . -links +1 ! -type d -print
 
-echo "###### test if 3 hard links for test1.txt exists in all differential backup folders"
+echo "###### test if 3 hard links for test1.txt exists in all incremental backup folders"
 if [[ 3 -ne $(find . -links +1 ! -type d -print | grep test1.txt | wc -l) ]]; then 
     echo failled && exit 1
 fi
 
-echo "###### test if 0 hard links for latest changed file test4.txt exists in differential backup folders"
+echo "###### test if 0 hard links for latest changed file test4.txt exists in incremental backup folders"
 if [[ 0 -ne $(find . -links +1 ! -type d -print | grep test4.txt | wc -l) ]]; then 
     echo failled && exit 1
 fi

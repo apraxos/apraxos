@@ -1,7 +1,7 @@
 === abackup - apraxos Backup
 
 .Die Anforderungen
-- Differenzielle tägliche Sicherung: Viele Stände, wenig Speicherbedarf
+- Inkrementelle tägliche Sicherung: Viele Stände, wenig Speicherbedarf
 - Konsistente Sicherung: Ein Backup wird angestoßen, wenn kein apraxos Prozess läuft 
 - Überprüfbare Backups (Zeitstempel, Fehlerlogs)
 - Anstoßen der Sicherung vor Apraxos Updates
@@ -54,13 +54,13 @@ abackup.sh status
 
 ==== Konfiguration
 
-_Wie konfiguriere ich ein einfaches differenzielles platzsparendes Backup mit Tagesstempel?_ 
+_Wie konfiguriere ich ein einfaches inkrementelles platzsparendes Backup mit Tagesstempel?_ 
 
 .backup.cfg 
 ----
 sourcefolders=~/a/
 _today=$(date +%Y-%m-%d-%H%M)
-destfolders_diff=/media/usb-backup/${_today}/
+destfolders_incr=/media/usb-backup/${_today}/
 logfolder=/media/usb-backup/log
 ----
 

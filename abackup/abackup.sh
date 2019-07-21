@@ -44,8 +44,8 @@ function rolling_backup {
     set +x
 }  
 
-# differential_backup ${last} ${sourcefolder} ${destfolder} 
-function differential_backup {
+# incremental_backup ${last} ${sourcefolder} ${destfolder} 
+function incremental_backup {
     _last=$1
     _sourcefolder=$2
     _destfolder=$3
@@ -69,10 +69,10 @@ function differential_backup {
     mkdir -p ${_destfolder} ${logfolder}
 
     set -x
-    echo "****** differential backup start ${_sourcefolder} --> ${_destfolder} ******" >> ${logfolder}/differential-${now}.log
-    rsync ${rsyncopts} ${exclude} --stats --log-file=${logfolder}/differential-${now}.log "${_sourcefolder}"  "${_destfolder}" $linkdestopt
+    echo "****** incremental backup start ${_sourcefolder} --> ${_destfolder} ******" >> ${logfolder}/incremental-${now}.log
+    rsync ${rsyncopts} ${exclude} --stats --log-file=${logfolder}/incremental-${now}.log "${_sourcefolder}"  "${_destfolder}" $linkdestopt
     ln -nsf "${_destfolder}" "${_destfolder_last}"
-    echo "****** differential backup end ${_sourcefolder} --> ${_destfolder} ******" >> ${logfolder}/differential-${now}.log
+    echo "****** incremental backup end ${_sourcefolder} --> ${_destfolder} ******" >> ${logfolder}/incremental-${now}.log
     set +x
 }
 
@@ -91,8 +91,8 @@ case $key in
     shift
     shift
     ;;
-    -d|--destfolders_diff)
-    DESTFOLDERS_DIFF=("$2")
+    -d|--destfolders_incr)
+    DESTFOLDERS_INCR=("$2")
     shift
     shift
     ;;
@@ -140,8 +140,8 @@ fi
 if [[ -n $SOURCEFOLDERS ]]; then
     sourcefolders=$SOURCEFOLDERS
 fi
-if [[ -n $DESTFOLDERS_DIFF ]]; then
-    destfolders_diff=$DESTFOLDERS_DIFF
+if [[ -n $DESTFOLDERS_INCR ]]; then
+    destfolders_incr=$DESTFOLDERS_INCR
 fi
 if [[ -n $DESTFOLDERS_ROLLING ]]; then
     destfolders_rolling=$DESTFOLDERS_ROLLING
@@ -150,7 +150,7 @@ if [[ -n $EXCLUDE ]]; then
     exclude=$EXCLUDE
 fi
 
-_destfolders_all=$destfolders_diff
+_destfolders_all=$destfolders_incr
 if [[ -n $_destfolders_all ]]; then
     if [[ -n $destfolders_rolling ]]; then
         _destfolders_all="$_destfolders_all,$destfolders_rolling"
@@ -170,8 +170,8 @@ fi
 
 if [[ -n $RUN ]]; then
     
-    if [[ ! ( $destfolders_rolling =~ ^.+$ ) && ! ( $destfolders_diff =~ ^.+$) ]]; then
-        echo "at leat destfolders_rolling or destfolders_diff must be non empty"
+    if [[ ! ( $destfolders_rolling =~ ^.+$ ) && ! ( $destfolders_incr =~ ^.+$) ]]; then
+        echo "at leat destfolders_rolling or destfolders_incr must be non empty"
         exit 2
     fi
 
@@ -193,10 +193,10 @@ if [[ -n $RUN ]]; then
         done
         echo ""
 
-        dests=(${destfolders_diff//,/ })
+        dests=(${destfolders_incr//,/ })
         for dest in "${dests[@]}"
         do
-            differential_backup "${last}" "${source}" "${dest}" 
+            incremental_backup "${last}" "${source}" "${dest}" 
         done
     done
 
@@ -279,7 +279,7 @@ elif [[ -n $CHANGES ]]; then
     exit 0
 
 elif [[ -n $HELP ]]; then
-    echo "usage: abackup.sh [status|run|changes] [--config|-c filename] [--sourcefolders|-s folderlist] [--destfolders_diff|-d folderlist] [--destfolders_rolling|-r folderlist] [--exclude|-e filesorfolders]"
+    echo "usage: abackup.sh [status|run|changes] [--config|-c filename] [--sourcefolders|-s folderlist] [--destfolders_incr|-d folderlist] [--destfolders_rolling|-r folderlist] [--exclude|-e filesorfolders]"
     exit 0
 
 else 

@@ -23,7 +23,7 @@ fi
 
 # differentielles platzsparendes Backup mit Datum und Uhrzeit:
 _today=$(date +%Y-%m-%d-%H%M)
-destfolders_diff=${_dest}/differential/${_today}/
+destfolders_incr=${_dest}/incremental/${_today}/
 
 # zusätzlich ein wöchentlich rollierendes vollständiges Backup mit Wochentagen
 _weekday=`LC_ALL=de_DE date '+%A'`

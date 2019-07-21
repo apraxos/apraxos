@@ -2,7 +2,7 @@
 
 == Anforderungen und Ziele
 
-- Differenzielle tägliche Sicherung: Viele Stände, wenig Speicherbedarf
+- Inkrementelle tägliche Sicherung: Viele Stände, wenig Speicherbedarf
 - Rollierende Wochentagssicherung: Bereitstellung verschiedener paraller Stände zu Recherche Zwecke. Das Backup ist ein vollständiges Abbild und für sich lauffähig
 - Konsistente Sicherung 
 - Überprüfbare Backups (Zeitstempel, Fehlerlogs)
@@ -18,7 +18,7 @@
 - Backup Script muss unabhägig von Apraxos sein
 - Die Konfiguration sollte zwischen Backup Skript und Apraxos geteilt sein 
 - Die Backup Konfiguration muss anpassbar bleiben
-- beides - Differenzielle Sicherung und rollierende Sicherung anbieten
+- beides - Inkrementelle Sicherung und rollierende Sicherung anbieten
 - Optionale Einbindung von NAS Systemen
 - Optionale Einbindung von externen verschlüsselten Speichermedian wie USB Festplatten
 
@@ -26,8 +26,8 @@
 
 - rsync für lokale Sicherung nuten (optional: auch um auf NAS zu sichern)
 - ebenso könnte eine Sicherung auf einen häuslichen Rechner über das Internet laufen, verschlüsselte Übertragung vorausgesetzt. 
-- Differenzielle Sicherung auf lokaler Festplatte/USB Festplatte mittels rsync --link-dest
-- Differenzielle Sicherung auf NAS: Nutzung von Snapshots
+- Inkrementelle Sicherung auf lokaler Festplatte/USB Festplatte mittels rsync --link-dest
+- Inkrementelle Sicherung auf NAS: Nutzung von Snapshots
 - integrierbar in Apraxos, da Apraxos am besten weiss, wann eine Sicherung geschrieben werden kann
 - integrierbar als cron job
 - USB Festplatten im Rotationsprinzip nutzen: Sicherheit bei Brand und Diebstahl bieten nur 1-5 USB-Festplatten, bei Bedarf auch 
