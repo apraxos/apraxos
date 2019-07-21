@@ -244,7 +244,7 @@ elif [[ -n $STATUS ]]; then
         dests=(${_destfolders_all//,/ })
         for dest in "${dests[@]}"
         do
-            changed=$(rsync --dry-run --stats ${rsyncopts} ${exclude} "${source}" "${dest}" | grep -e "^Number of.*files transferred:" | sed "s/^.*files transferred: //")            
+            changed=$(rsync --dry-run --stats ${rsyncopts} ${exclude} "${source}" "${dest}" | grep -e "^Number of.*files transferred:" | sed "s/^.*files transferred: //" | sed 's/[,\.]//g')            
             changedCount=$(( $changedCount + $changed ))
         done
     done
