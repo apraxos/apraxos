@@ -1,12 +1,12 @@
 # Eine Beispiel Konfiguration mit einem im Netzwerk verfügbaren NFS Share
 #
-# Ein NFS Share 192.168.2.23:/usbsafe wird unter /home/praxis/usbsafe/ auf dem Apraxos Server gemountet. 
+# Ein NFS Share 192.168.2.23:/usbsafe wird unter /home/praxis/usbsafe/ auf dem Apraxos Server gemountet.
 # Die apraxos Installation befindet sich hier unter /home/praxis/a. Das NFS Backup mit 40 GB dauert ca 2min.
 #
 # /etc/fstab :
 #   192.168.2.23:/usbsafe /home/praxis/usbsafe/ nfs rw 0 0
 #
-# Damit das Backup täglich um 20:30 ausgeführt wird: 
+# Damit das Backup täglich um 20:30 ausgeführt wird:
 #   crontab -e
 #   30 20 * * * /home/praxis/apraxos/abackup/abackup.sh run
 #
@@ -21,12 +21,15 @@ if [ "$(df ${_dest} --output=target | tail -n 1)" == \
     exit 1
 fi
 
-# differentielles platzsparendes Backup mit Datum und Uhrzeit:
 _today=$(date +%Y-%m-%d-%H%M)
+_weekday=`LC_ALL=de_DE date '+%A'`
+
+# inkrementelles platzsparendes Backup auf den NFS Share mit Datum und Uhrzeit:
 destfolders_incr=${_dest}/incremental/${_today}/
 
 # zusätzlich ein wöchentlich rollierendes vollständiges Backup mit Wochentagen
-_weekday=`LC_ALL=de_DE date '+%A'`
-destfolders_rolling=${_dest}/rolling/${_weekday}/
+# - auf den lokalen NFS Share und
+# - auf den entfernten NAS Storage per ssh
+destfolders_rolling=${_dest}/rolling/${_weekday}/,admin@192.168.2.23:/share/vmbackup/abackup/${_weekday}/
 
 logfolder=/home/praxis/usbsafe/abackup/log/

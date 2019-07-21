@@ -11,6 +11,7 @@ cd $( dirname $0 )
 # default env variables, can be overwitten in backup.cfg:
 backuptimestamp=./backup_timestamp
 rsyncopts='-a --delete --exclude-from=./backup_exclude.cfg'
+logfolder=/tmp/abackup/log
 
 # check_folder ${name} ${folder}
 function check_folder {
