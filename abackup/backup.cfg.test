@@ -1,12 +1,12 @@
 # Liste von Komma getrennten Quell Verzeichnissen, die gesichert werden müssen:
 sourcefolders=test/a/,/tmp/abackup-test-nonrelative
 
-# Differenzielles platzsparendes tägliches Backup. 
+# Inkrementelles platzsparendes tägliches Backup. 
 # Alle Backups müssen auf der selben Festplatte liegen. 
 # Das unterste Verzeichnis muss die Tagesstände beinhalten (z.B. .../${_today}/).
 # Das letzte backup wird mit dem Link last markiert. 
 _today=$(date +%Y-%m-%d-%H%M)
-destfolders_diff=test/backup_diff/${_today}/,test/backup_diff2/${_today}/
+destfolders_incr=test/backup_incr/${_today}/,test/backup_incr2/${_today}/
 
 # Ein Rollierendes vollständiges Backup mit Wochentag Namen.
 # Das Ziel wird einmal die Woche überschrieben und landet im WEEKDAY Unterorder.
@@ -19,4 +19,4 @@ destfolders_rolling=test/backup_rolling/${_weekday}/,test/backup_rolling2/
 logfolder=test/log
 
 # verwendete rsync Optionen (siehe rsync Manual!)
-# rsyncopts='-aR --delete --stats --exclude-from=./backup_exclude.cfg'
+# rsyncopts='-av --delete --stats --exclude-from=./backup_exclude.cfg'

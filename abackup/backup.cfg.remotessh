@@ -1,0 +1,9 @@
+# Eine Beispiel Konfiguration mit einem entfernten SSH Server als Backup Medium
+# Hinweis: Aktuell funktioniert dies nur mit destfolders_rolling !
+
+sourcefolders=/home/praxis/a
+
+_weekday=`LC_ALL=de_DE date '+%A'`
+
+destfolders_rolling=admin@192.168.2.23:/share/vmbackup/abackup/${_weekday}/
+

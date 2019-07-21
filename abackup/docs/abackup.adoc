@@ -1,7 +1,7 @@
 === abackup - apraxos Backup
 
 .Die Anforderungen
-- Differenzielle tägliche Sicherung: Viele Stände, wenig Speicherbedarf
+- Inkrementelle tägliche Sicherung: Viele Stände, wenig Speicherbedarf
 - Konsistente Sicherung: Ein Backup wird angestoßen, wenn kein apraxos Prozess läuft 
 - Überprüfbare Backups (Zeitstempel, Fehlerlogs)
 - Anstoßen der Sicherung vor Apraxos Updates
@@ -19,7 +19,7 @@
 
 .abackup.sh run
 - rsync zur rollierenden Wochentagssicherung und/oder
-- rsync zur differentiellen täglichen Sicherung 
+- rsync zur inkrementellen täglichen Sicherung 
 - das Fehler- und Statusprotokoll wird gespeichert
 - ein backup_timestamp wird erzeugt
 
@@ -54,36 +54,15 @@ abackup.sh status
 
 ==== Konfiguration
 
-_Wie konfiguriere ich ein einfaches differenzielles platzsparendes Backup mit Tagesstempel?_ 
+_Wie konfiguriere ich ein einfaches inkrementelles platzsparendes Backup mit Tagesstempel?_ 
 
 .backup.cfg 
 ----
 sourcefolders=~/a/
 _today=$(date +%Y-%m-%d-%H%M)
-destfolders_diff=/media/usb-backup/${_today}/
+destfolders_incr=/media/usb-backup/${_today}/
 logfolder=/media/usb-backup/log
 ----
-
-// _Wie konfiguriere ich ein rollierendes Backup mit 7 USB Festplatten - für jeden Wochentag eine?_
-//
-//Es müssen 7 Festplatten gemountet werden:
-//
-// /media/usb-backup-Montag
-// /media/usb-backup-Dienstag
-// /media/usb-backup-Mittwoch
-// /media/usb-backup-Donnerstag
-// /media/usb-backup-Freitag
-// /media/usb-backup-Samstag
-// /media/usb-backup-Sonntag
-// 
-//.backup.cfg 
-//----
-//sourcefolders=a/
-//_weekday=`LC_ALL=de_DE date '+%A'`
-//destfolders_rolling=/media/usb-backup-${_weekday}/
-//logfolder=/media/usb-backup-${_weekday}/log
-//rsyncopts='-aR --delete --stats --exclude-from=./backup_exclude.cfg
-//----
 
 _Wie schließe ich Files vom Backup aus?_
 
@@ -102,7 +81,8 @@ _Wo finde ich weitere Beispiele?_
 
 * backup.cfg.minimal: ein einfaches Standard Beispiel
 * backup.cfg.test: ein komplexes Beispiel, welches die meisten Konfigurationsmöglichen beinhaltet
-* backup.cfg.nfs: ein fortgeschrittenes Beispiel, welches zum Backup einen großen Fileshare nutzt und zusätzlich ein rollierendes Backup ausführt. Es wird hier auch geprüft, ob der Share wirklich gemountet ist. 
+* backup.cfg.remotessh: ein einfaches Beipsiel, welches einen entfernten SSH Server als Backup Medium nutzt 
+* backup.cfg.nfs: ein fortgeschrittenes Beispiel, welches zum Backup einen großen Fileshare nutzt und zusätzlich ein rollierendes Backup ausführt lokal und auf einen entfernten SSH Server durchführt. Es wird hier auch geprüft, ob der Share wirklich gemountet ist. 
 
 ==== abackup.sh test
 

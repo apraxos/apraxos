@@ -9,7 +9,7 @@ rm -rf test backup_timestamp /tmp/abackup-test-nonrelative
 
 sources=(${sourcefolders//,/ })
 destsr=(${destfolders_rolling//,/ })
-destsd=(${destfolders_diff//,/ })
+destsd=(${destfolders_incr//,/ })
 
 destsr[0]=$(realpath -m --relative-to . ${destsr[0]})
 destsr[1]=$(realpath -m --relative-to . ${destsr[1]})
@@ -22,24 +22,22 @@ do
     echo test1 > $source/test1.txt
     echo test2 > $source/test2.txt
 done
-sources[0]=$(realpath --relative-to . ${sources[0]})
-sources[1]=$(realpath --relative-to . ${sources[1]})
 
 ./abackup.sh run \
     --config ./backup.cfg.test
 
 echo "###### test if destination file test1 exists in rolling backup folder"
-if [[ ( ! -f ${destsr[0]}/${sources[0]}/test1.txt ) ||  ( ! -f ${destsr[1]}/${sources[0]}/test1.txt ) ]]; then
+if [[ ( ! -f ${destsr[0]}/$(basename ${sources[0]})/test1.txt ) ||  ( ! -f ${destsr[1]}/$(basename ${sources[0]})/test1.txt ) ]]; then
     echo failled && exit 1
 fi
 
-echo "###### test if destination file test1 exists in differential backup folder"
-if [[ ( ! -f ${destsd[0]}/${sources[0]}/test1.txt ) || ( ! -f ${destsd[1]}/${sources[0]}/test1.txt ) ]]; then    
+echo "###### test if destination file test1 exists in incremental backup folder"
+if [[ ( ! -f ${destsd[0]}/$(basename ${sources[0]})/test1.txt ) || ( ! -f ${destsd[1]}/$(basename ${sources[0]})/test1.txt ) ]]; then    
     echo failled1 && exit 1
 fi
 
-echo "###### test if destination file test1 exists in differential last backup folder"
-if [[ ( ! -f ${destsd[0]}/../last/${sources[0]}/test1.txt ) || ( ! -f ${destsd[1]}/../last/${sources[0]}/test1.txt ) ]]; then    
+echo "###### test if destination file test1 exists in incremental last backup folder"
+if [[ ( ! -f ${destsd[0]}/../last/$(basename ${sources[0]})/test1.txt ) || ( ! -f ${destsd[1]}/../last/$(basename ${sources[0]})/test1.txt ) ]]; then    
     echo failled2 && exit 1
 fi
 
@@ -67,7 +65,7 @@ dr=$(realpath -m --relative-to=. ${destsr[0]}/../${tomorrow_wd})/
 
 ./abackup.sh run \
     --destfolders_rolling $dr \
-    --destfolders_diff $dd \
+    --destfolders_incr $dd \
     --config ./backup.cfg.test
 
 # simulate some changes
@@ -82,22 +80,35 @@ dr=$(realpath -m --relative-to=. ${destsr[0]}/../${tomorrow_wd})
 
 ./abackup.sh run \
     --destfolders_rolling $dr \
-    --destfolders_diff $dd \
+    --destfolders_incr $dd \
     --config ./backup.cfg.test
 
 echo "###### list hard linked files"
-find . -links +1 ! -type d -print
+find ./test -links +1 ! -type d -print
 
-echo "###### test if 3 hard links for test1.txt exists in all differential backup folders"
-if [[ 3 -ne $(find . -links +1 ! -type d -print | grep test1.txt | wc -l) ]]; then 
+echo "###### test if 3 hard links for test1.txt exists in all incremental backup folders"
+if [[ 3 -ne $(find ./test -links +1 ! -type d -print | grep test1.txt | wc -l) ]]; then 
     echo failled && exit 1
 fi
 
-echo "###### test if 0 hard links for latest changed file test4.txt exists in differential backup folders"
-if [[ 0 -ne $(find . -links +1 ! -type d -print | grep test4.txt | wc -l) ]]; then 
+echo "###### test if 0 hard links for latest changed file test4.txt exists in incremental backup folders"
+if [[ 0 -ne $(find ./test -links +1 ! -type d -print | grep test4.txt | wc -l) ]]; then 
     echo failled && exit 1
 fi
 
+
+echo "###### make sure backup is in sync"
+./abackup.sh run \
+    --config ./backup.cfg.test
+
+
+echo "###### test status success on no changed files since last backup"
+./abackup.sh status \
+    --config ./backup.cfg.test
+
+if [[ $? -ne 0 ]]; then 
+    echo failled && exit 1
+fi
 
 echo "###### test status failure on two changed files since last backup"
 sleep 1
@@ -119,11 +130,13 @@ if [[ $? -ne 4 ]]; then
     echo failled && exit 1
 fi
 
-echo "###### test status with source folder and exclude with ignored changes"
+echo "###### test status excluding standard and additional files"
+touch ${sources[0]}/backup_timestamp
+
 ./abackup.sh status \
     --sourcefolders ${sources[0]} \
     --config ./backup.cfg.test \
-    --exclude "${sources[0]}/*.txt"
+    --exclude "*.txt"
 
 if [[ $? -ne 0 ]]; then 
     echo failled && exit 1
