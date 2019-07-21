@@ -82,7 +82,7 @@ logfolder=/media/usb-backup/log
 //_weekday=`LC_ALL=de_DE date '+%A'`
 //destfolders_rolling=/media/usb-backup-${_weekday}/
 //logfolder=/media/usb-backup-${_weekday}/log
-//rsyncopts='-aR --delete --stats --exclude-from=./backup_exclude.cfg
+//rsyncopts='-a --delete --stats --exclude-from=./backup_exclude.cfg
 //----
 
 _Wie schließe ich Files vom Backup aus?_
