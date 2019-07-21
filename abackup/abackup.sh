@@ -10,7 +10,7 @@ cd $( dirname $0 )
 
 # default env variables, can be overwitten in backup.cfg:
 backuptimestamp=./backup_timestamp
-rsyncopts='-a --delete --exclude-from=./backup_exclude.cfg'
+rsyncopts='-av --delete --exclude-from=./backup_exclude.cfg'
 logfolder=/tmp/abackup/log
 
 # check_folder ${name} ${folder}
@@ -244,9 +244,7 @@ elif [[ -n $STATUS ]]; then
         dests=(${_destfolders_all//,/ })
         for dest in "${dests[@]}"
         do
-            changed=$(rsync --dry-run --stats ${rsyncopts} ${exclude} "${source}" "${dest}" | grep -e "^Number of.*files transferred:" | sed "s/^.*files transferred: //")
-            echo rsync --dry-run --stats ${rsyncopts} ${exclude} "${source}" "${dest}" -- $changed
-            
+            changed=$(rsync --dry-run --stats ${rsyncopts} ${exclude} "${source}" "${dest}" | grep -e "^Number of.*files transferred:" | sed "s/^.*files transferred: //")            
             changedCount=$(( $changedCount + $changed ))
         done
     done

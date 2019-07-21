@@ -17,7 +17,7 @@ _dest=/home/praxis/usbsafe/abackup
 # pruefe sicherheitshalber, ob das Zielmedium wirklich gemountet ist:
 if [ "$(df ${_dest} --output=target | tail -n 1)" == \
      "$(df ${sourcefolders} --output=target | tail -n 1)" ]; then
-    echo "destination folder not coorectly mounted"
+    echo "destination folder not correctly mounted"
     exit 1
 fi
 
