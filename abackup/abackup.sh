@@ -36,7 +36,11 @@ function rolling_backup {
     # check if source folder exists
     _sourcefolder=$(realpath --relative-base . $_sourcefolder)
 
-    mkdir -p ${_destfolder} ${logfolder}
+    mkdir -p ${logfolder} 
+    # if it is a local folder create it, remote folders will be created by rsync
+    if [[ ! ${_destfolder} =~  ^[a-zA-Z0-9_-]+: ]]; then
+        mkdir -p ${_destfolder}
+    fi
 
     set -x
     echo "****** rolling backup start ${_sourcefolder} --> ${_destfolder} *******" >> ${logfolder}/rolling-${_now}.log
@@ -59,7 +63,6 @@ function incremental_backup {
     
     _destfolder=$(realpath -m $_destfolder)
     _destfolder_last=$(realpath -m ${_destfolder}/..)/last
-    mkdir -p ${_destfolder}
 
     if [[ -d ${_destfolder_last} ]]; then
         linkdestopt="--link-dest=${_destfolder_last}"
@@ -67,8 +70,12 @@ function incremental_backup {
         linkdestopt=
     fi
     
-    mkdir -p ${_destfolder} ${logfolder}
-
+    mkdir -p ${logfolder}
+    # if it is a local folder create it, remote folders will be created by rsync
+    if [[ ! ${_destfolder} =~  ^[a-zA-Z0-9_-]+: ]]; then
+        mkdir -p ${_destfolder}
+    fi
+    
     set -x
     echo "****** incremental backup start ${_sourcefolder} --> ${_destfolder} ******" >> ${logfolder}/incremental-${now}.log
     rsync ${rsyncopts} ${exclude} --stats --log-file=${logfolder}/incremental-${now}.log "${_sourcefolder}"  "${_destfolder}" $linkdestopt
