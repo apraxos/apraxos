@@ -36,7 +36,11 @@ function rolling_backup {
     # check if source folder exists
     _sourcefolder=$(realpath --relative-base . $_sourcefolder)
 
-    mkdir -p ${_destfolder} ${logfolder}
+    mkdir -p ${logfolder} 
+    # if it is a local folder create it, remote folders will be created by rsync
+    if [[ ! ${_destfolder} =~  ^[a-zA-Z0-9_-]+: ]]; then
+        mkdir -p ${_destfolder}
+    fi
 
     set -x
     echo "****** rolling backup start ${_sourcefolder} --> ${_destfolder} *******" >> ${logfolder}/rolling-${_now}.log
@@ -59,7 +63,6 @@ function incremental_backup {
     
     _destfolder=$(realpath -m $_destfolder)
     _destfolder_last=$(realpath -m ${_destfolder}/..)/last
-    mkdir -p ${_destfolder}
 
     if [[ -d ${_destfolder_last} ]]; then
         linkdestopt="--link-dest=${_destfolder_last}"
@@ -67,7 +70,11 @@ function incremental_backup {
         linkdestopt=
     fi
     
-    mkdir -p ${_destfolder} ${logfolder}
+    mkdir -p ${logfolder}
+    # if it is a local folder create it, remote folders will be created by rsync
+    if [[ ! ${_destfolder} =~  ^[a-zA-Z0-9_-]+: ]]; then
+        mkdir -p ${_destfolder}
+    fi
 
     set -x
     echo "****** incremental backup start ${_sourcefolder} --> ${_destfolder} ******" >> ${logfolder}/incremental-${now}.log
@@ -180,6 +187,9 @@ if [[ -n $RUN ]]; then
         last=$(date -r ${backuptimestamp} +%Y-%m-%d-%H%M%S)
         echo "****** last backup was ${last}"
     fi
+    
+    # save _destfolders_all for future "abackup.sh status" calls
+    echo $_destfolders_all > ${backuptimestamp}_destinations
 
     touch ${backuptimestamp}
     now=$(date -r ${backuptimestamp} +%Y-%m-%d-%H%M%S)
@@ -238,13 +248,15 @@ elif [[ -n $STATUS ]]; then
         newerCount=$(( $newerCount + $newer ))
     done
 
+    destinations=$(cat ${backuptimestamp}_destinations)
     for source in "${sources[@]}"
     do
         source=$(realpath --relative-base . $source)
-        dests=(${_destfolders_all//,/ })
+        dests=(${destinations//,/ })
         for dest in "${dests[@]}"
         do
             changed=$(rsync --dry-run --stats ${rsyncopts} ${exclude} "${source}" "${dest}" | grep -e "^Number of.*files transferred:" | sed "s/^.*files transferred: //" | sed 's/[,\.]//g')            
+            # echo rsync --dry-run --stats ${rsyncopts} ${exclude} "${source}" "${dest}" --   $changed         
             changedCount=$(( $changedCount + $changed ))
         done
     done
@@ -262,11 +274,12 @@ elif [[ -n $STATUS ]]; then
 elif [[ -n $CHANGES ]]; then
 
     sources=(${sourcefolders//,/ })
+    destinations=$(cat ${backuptimestamp}_destinations)
 
     for source in "${sources[@]}"
     do
         source=$(realpath --relative-base . $source)
-        dests=(${_destfolders_all//,/ })
+        dests=(${destinations//,/ })
         for dest in "${dests[@]}"
         do
             echo "****** changes start ${source} --> ${dest} ******"
