@@ -24,6 +24,15 @@ function check_folder {
     fi
 }
 
+# local_mkdir ${folder}
+function local_mkdir {
+    # if it is a local folder create it, remote folders will be created by rsync
+    _folder=$1
+    if [[ ! ${_folder} =~  ^[a-zA-Z0-9_-]+: ]]; then
+        mkdir -p ${_folder}
+    fi
+}
+
 # rolling_backup ${now} ${sourcefolder} ${destfolder} 
 function rolling_backup {
     _now=$1
@@ -33,14 +42,13 @@ function rolling_backup {
     check_folder "source folder" $_sourcefolder
     check_folder "destination folder" $_destfolder
     
-    # check if source folder exists
-    _sourcefolder=$(realpath --relative-base . $_sourcefolder)
+    if [[ ! ${_sourcefolder} =~  ^[a-zA-Z0-9_-]+: ]]; then
+        # if it is a local path, check if source folder exists
+        _sourcefolder=$(realpath --relative-base . $_sourcefolder)
+    fi
 
     mkdir -p ${logfolder} 
-    # if it is a local folder create it, remote folders will be created by rsync
-    if [[ ! ${_destfolder} =~  ^[a-zA-Z0-9_-]+: ]]; then
-        mkdir -p ${_destfolder}
-    fi
+    local_mkdir ${_destfolder}
 
     set -x
     echo "****** rolling backup start ${_sourcefolder} --> ${_destfolder} *******" >> ${logfolder}/rolling-${_now}.log
@@ -58,8 +66,10 @@ function incremental_backup {
     check_folder "source folder" $_sourcefolder
     check_folder "destination folder" $_destfolder
 
-    # check if source folder exists
-    _sourcefolder=$(realpath --relative-base . $_sourcefolder)
+    if [[ ! ${_sourcefolder} =~  ^[a-zA-Z0-9_-]+: ]]; then
+        # if it is a local path, check if source folder exists
+        _sourcefolder=$(realpath --relative-base . $_sourcefolder)
+    fi
     
     _destfolder=$(realpath -m $_destfolder)
     _destfolder_last=$(realpath -m ${_destfolder}/..)/last
@@ -71,10 +81,7 @@ function incremental_backup {
     fi
     
     mkdir -p ${logfolder}
-    # if it is a local folder create it, remote folders will be created by rsync
-    if [[ ! ${_destfolder} =~  ^[a-zA-Z0-9_-]+: ]]; then
-        mkdir -p ${_destfolder}
-    fi
+    local_mkdir ${_destfolder}
 
     set -x
     echo "****** incremental backup start ${_sourcefolder} --> ${_destfolder} ******" >> ${logfolder}/incremental-${now}.log

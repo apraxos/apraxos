@@ -1,5 +1,8 @@
 # Eine Beispiel Konfiguration mit einem entfernten SSH Server als Backup Medium
+# Zur Übetragung ohne Passworteingabe, z.B.  den lokalen ~/.ssh/id_rsa.pub am Zielrechner zum File ~/.ssh/authorized_keys hinzufügen 
+#
 # Hinweis: Aktuell funktioniert dies nur mit destfolders_rolling !
+#
 
 sourcefolders=/home/praxis/a
 
