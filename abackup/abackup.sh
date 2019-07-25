@@ -13,6 +13,9 @@ backuptimestamp=./backup_timestamp
 rsyncopts='-av --delete --exclude-from=./backup_exclude.cfg'
 logfolder=/tmp/abackup/log
 
+# regular expression to decide if a folder is local or remote
+idlocalreg="^[a-zA-Z0-9@_-]+:"
+
 # check_folder ${name} ${folder}
 function check_folder {
     _name=$1
@@ -28,7 +31,7 @@ function check_folder {
 function local_mkdir {
     # if it is a local folder create it, remote folders will be created by rsync
     _folder=$1
-    if [[ ! ${_folder} =~  ^[a-zA-Z0-9_-]+: ]]; then
+    if [[ ! ${_folder} =~ ${idlocalreg} ]]; then
         mkdir -p ${_folder}
     fi
 }
@@ -42,7 +45,7 @@ function rolling_backup {
     check_folder "source folder" $_sourcefolder
     check_folder "destination folder" $_destfolder
     
-    if [[ ! ${_sourcefolder} =~  ^[a-zA-Z0-9_-]+: ]]; then
+    if [[ ! ${_sourcefolder} =~ ${idlocalreg} ]]; then
         # if it is a local path, check if source folder exists
         _sourcefolder=$(realpath --relative-base . $_sourcefolder)
     fi
@@ -66,7 +69,7 @@ function incremental_backup {
     check_folder "source folder" $_sourcefolder
     check_folder "destination folder" $_destfolder
 
-    if [[ ! ${_sourcefolder} =~  ^[a-zA-Z0-9_-]+: ]]; then
+    if [[ ! ${_sourcefolder} =~ ${idlocalreg} ]]; then
         # if it is a local path, check if source folder exists
         _sourcefolder=$(realpath --relative-base . $_sourcefolder)
     fi
