@@ -82,6 +82,7 @@ _Wo finde ich weitere Beispiele?_
 * backup.cfg.minimal: ein einfaches Standard Beispiel
 * backup.cfg.test: ein komplexes Beispiel, welches die meisten Konfigurationsmöglichen beinhaltet
 * backup.cfg.remotessh: ein einfaches Beipsiel, welches einen entfernten SSH Server als Backup Medium nutzt 
+* backup.cfg.remotesource: ein Beispiel, welches die Daten eines entfernten Rechners lokal auf die Festplatte sichert. Dies ist z.B. nützlich um weitere Arbeitsplatzrechner am Apraxos Server zu sichern.
 * backup.cfg.nfs: ein fortgeschrittenes Beispiel, welches zum Backup einen großen Fileshare nutzt und zusätzlich ein rollierendes Backup ausführt lokal und auf einen entfernten SSH Server durchführt. Es wird hier auch geprüft, ob der Share wirklich gemountet ist. 
 
 ==== abackup.sh test
