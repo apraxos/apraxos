@@ -3,6 +3,10 @@
 # all folders must be relative to this script 
 cd $( dirname $0 )
 
+#
+# the following tests use backup.cfg.test
+#
+
 source backup.cfg.test
  
 rm -rf test backup_timestamp /tmp/abackup-test-nonrelative
@@ -86,8 +90,13 @@ dr=$(realpath -m --relative-to=. ${destsr[0]}/../${tomorrow_wd})
 echo "###### list hard linked files"
 find ./test -links +1 ! -type d -print
 
-echo "###### test if 3 hard links for test1.txt exists in all incremental backup folders"
-if [[ 3 -ne $(find ./test -links +1 ! -type d -print | grep test1.txt | wc -l) ]]; then 
+echo "###### test if file test1.txt exist 6 times in all incremental backup folders"
+if [[ 6 -ne $(find test/backup_incr -name test1.txt | wc -l) ]]; then 
+    echo failled && exit 1
+fi
+
+echo "###### test if 6 hard links for test1.txt exists in all incremental backup folders because test1.txt never changed"
+if [[ 6 -ne $(find ./test -links +1 ! -type d -print | grep test1.txt | wc -l) ]]; then 
     echo failled && exit 1
 fi
 
@@ -139,6 +148,54 @@ touch ${sources[0]}/backup_timestamp
     --exclude "*.txt"
 
 if [[ $? -ne 0 ]]; then 
+    echo failled && exit 1
+fi
+
+
+#
+# the following tests use backup.cfg.testb
+#
+
+source backup.cfg.testb
+
+sources=(${sourcefolders//,/ })
+
+for source in "${sources[@]}"
+do
+    mkdir -p $source
+    echo testb1 > $source/testb1.txt
+    echo testb2 > $source/testb2.txt
+done
+
+./abackup.sh run \
+    --config ./backup.cfg.testb
+
+dest=$(realpath -m --relative-to . ${destfolders_incr})
+
+echo "###### test if there is a backup for testb1.txt for both sources a2 and a3"
+if [[ ( ! -f ${dest}/$(basename ${sources[0]})/testb1.txt ) || ( ! -f ${dest}/$(basename ${sources[1]})/testb1.txt ) ]]; then    
+    echo failled1 && exit 1
+fi
+
+echo "###### test if file testb1.txt was synced twice"
+if [[ 2 -ne $(grep "testb1.txt" test/logb/* | wc -l) ]]; then 
+    echo failled && exit 1
+fi
+
+sleep 1
+
+./abackup.sh run \
+    --config ./backup.cfg.testb
+
+dest=$(realpath -m --relative-to . ${destfolders_incr})
+
+echo "###### test if there is a backup for testb1.txt for both sources a2 and a3"
+if [[ ( ! -f ${dest}/$(basename ${sources[0]})/testb1.txt ) || ( ! -f ${dest}/$(basename ${sources[1]})/testb1.txt ) ]]; then    
+    echo failled1 && exit 1
+fi
+
+echo "###### test if file testb1.txt was synced not again ( just twice from the last time )"
+if [[ 2 -ne $(grep "testb1.txt" test/logb/* | wc -l) ]]; then 
     echo failled && exit 1
 fi
 

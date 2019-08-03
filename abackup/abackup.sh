@@ -27,72 +27,61 @@ function check_folder {
     fi
 }
 
-# local_mkdir ${folder}
-function local_mkdir {
-    # if it is a local folder create it, remote folders will be created by rsync
-    _folder=$1
-    if [[ ! ${_folder} =~ ${idlocalreg} ]]; then
-        mkdir -p ${_folder}
-    fi
-}
-
-# rolling_backup ${now} ${sourcefolder} ${destfolder} 
-function rolling_backup {
+# dobackup ${now} ${sourcefolders} ${destfolders} rolling|incremental
+function dobackup {
     _now=$1
-    _sourcefolder=$2
-    _destfolder=$3
+    _sourcefolders=$2
+    _destfolders=$3
+    _type=$4
 
-    check_folder "source folder" $_sourcefolder
-    check_folder "destination folder" $_destfolder
-    
-    if [[ ! ${_sourcefolder} =~ ${idlocalreg} ]]; then
-        # if it is a local path, check if source folder exists
-        _sourcefolder=$(realpath --relative-base . $_sourcefolder)
-    fi
+    dests=(${_destfolders//,/ })
+    for dest in "${dests[@]}"
+    do
+        check_folder "destination folder" $dest
 
-    mkdir -p ${logfolder} 
-    local_mkdir ${_destfolder}
+        if [[ ${_type} == "incremental" ]]; then
+            dest=$(realpath -m $dest)
+            dest_last=$(realpath -m ${dest}/..)/last
 
-    set -x
-    echo "****** rolling backup start ${_sourcefolder} --> ${_destfolder} *******" >> ${logfolder}/rolling-${_now}.log
-    rsync ${rsyncopts} ${exclude} --stats --log-file=${logfolder}/rolling-${_now}.log "${_sourcefolder}" "${_destfolder}"
-    echo "****** rolling backup end ${_sourcefolder} --> ${_destfolder} *******" >> ${logfolder}/rolling-${_now}.log
-    set +x
+            if [[ -d ${dest_last} ]]; then
+                linkdestopt="--link-dest=${dest_last}"
+            else
+                linkdestopt=
+            fi
+        fi
+        
+        mkdir -p ${logfolder} 
+        # if it is a local folder create it, remote folders will be created by rsync
+        if [[ ! ${dest} =~ ${idlocalreg} ]]; then
+            mkdir -p ${dest}
+        fi
+
+        sources=(${_sourcefolders//,/ })
+        for source in "${sources[@]}"
+        do
+            check_folder "source folder" $source
+
+            if [[ ! ${source} =~ ${idlocalreg} ]]; then
+                # if it is a local path, check if source folder exists
+                source=$(realpath --relative-base . $source)
+            fi
+
+            set -x
+            echo "****** ${_type} backup start ${source} --> ${dest} *******" >> ${logfolder}/${_type}-${_now}.log
+            rsync ${rsyncopts} ${exclude} --stats --log-file=${logfolder}/${_type}-${now}.log "${source}"  "${dest}" $linkdestopt
+            echo "****** ${_type} backup end ${source} --> ${dest} *******" >> ${logfolder}/${_type}-${_now}.log
+            set +x
+
+        done
+
+        if [[ ${_type} == "incremental" ]]; then
+                ln -nsf "${dest}" "${dest_last}"
+        fi
+
+        echo ""
+    done
+
 }  
-
-# incremental_backup ${last} ${sourcefolder} ${destfolder} 
-function incremental_backup {
-    _last=$1
-    _sourcefolder=$2
-    _destfolder=$3
-
-    check_folder "source folder" $_sourcefolder
-    check_folder "destination folder" $_destfolder
-
-    if [[ ! ${_sourcefolder} =~ ${idlocalreg} ]]; then
-        # if it is a local path, check if source folder exists
-        _sourcefolder=$(realpath --relative-base . $_sourcefolder)
-    fi
-    
-    _destfolder=$(realpath -m $_destfolder)
-    _destfolder_last=$(realpath -m ${_destfolder}/..)/last
-
-    if [[ -d ${_destfolder_last} ]]; then
-        linkdestopt="--link-dest=${_destfolder_last}"
-    else
-        linkdestopt=
-    fi
-    
-    mkdir -p ${logfolder}
-    local_mkdir ${_destfolder}
-
-    set -x
-    echo "****** incremental backup start ${_sourcefolder} --> ${_destfolder} ******" >> ${logfolder}/incremental-${now}.log
-    rsync ${rsyncopts} ${exclude} --stats --log-file=${logfolder}/incremental-${now}.log "${_sourcefolder}"  "${_destfolder}" $linkdestopt
-    ln -nsf "${_destfolder}" "${_destfolder_last}"
-    echo "****** incremental backup end ${_sourcefolder} --> ${_destfolder} ******" >> ${logfolder}/incremental-${now}.log
-    set +x
-}
 
 OTHER=()
 while [[ $# -gt 0 ]]
@@ -204,22 +193,8 @@ if [[ -n $RUN ]]; then
     touch ${backuptimestamp}
     now=$(date -r ${backuptimestamp} +%Y-%m-%d-%H%M%S)
 
-    sources=(${sourcefolders//,/ })
-    for source in "${sources[@]}"
-    do
-        dests=(${destfolders_rolling//,/ })
-        for dest in "${dests[@]}"
-        do
-            rolling_backup "${now}" "${source}" "${dest}" 
-        done
-        echo ""
-
-        dests=(${destfolders_incr//,/ })
-        for dest in "${dests[@]}"
-        do
-            incremental_backup "${last}" "${source}" "${dest}" 
-        done
-    done
+    dobackup "${now}" "${sourcefolders}" "${destfolders_rolling}" "rolling"
+    dobackup "${now}" "${sourcefolders}" "${destfolders_incr}"    "incremental"
 
     touch ${backuptimestamp}_done
 

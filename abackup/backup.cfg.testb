@@ -1,0 +1,4 @@
+sourcefolders=test/a2/,test/a3
+_today=$(date +%Y-%m-%d-%H%M%S) 
+destfolders_incr=test/backup_testb/${_today}
+logfolder=test/logb
