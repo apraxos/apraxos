@@ -12,7 +12,7 @@ destfolders_incr=test/backup_incr/${_today}/,test/backup_incr2/${_today}/
 # Das Ziel wird einmal die Woche überschrieben und landet im WEEKDAY Unterorder.
 # Die einzelnen Wochentage dürfen auf unterschiedliche Festplatten geschrieben werden.
 # destfolders_rolling auf leer setzen, falls kein rollierendes Backup erfolgen soll.
-_weekday=`LC_ALL=de_DE date '+%A'`
+_weekday=$(LC_ALL=de_DE date '+%A')
 destfolders_rolling=test/backup_rolling/${_weekday}/,test/backup_rolling2/
 
 # Backup Protokolle

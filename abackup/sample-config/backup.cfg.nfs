@@ -22,7 +22,7 @@ if [ "$(df ${_dest} --output=target | tail -n 1)" == \
 fi
 
 _today=$(date +%Y-%m-%d-%H%M)
-_weekday=`LC_ALL=de_DE date '+%A'`
+_weekday=$(LC_ALL=de_DE date '+%A')
 
 # inkrementelles platzsparendes Backup auf den NFS Share mit Datum und Uhrzeit:
 destfolders_incr=${_dest}/incremental/${_today}/

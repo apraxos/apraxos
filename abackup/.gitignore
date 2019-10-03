@@ -4,3 +4,4 @@ backup_timestamp_done
 backup_timestamp_destinations
 *.pdf
 *.tgz
+backup.cfg
