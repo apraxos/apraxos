@@ -7,7 +7,7 @@ cd $( dirname $0 )
 # the following tests use backup.cfg.test
 #
 
-source backup.cfg.test
+source sample-config/backup.cfg.test
  
 rm -rf test backup_timestamp /tmp/abackup-test-nonrelative
 
@@ -28,7 +28,7 @@ do
 done
 
 ./abackup.sh run \
-    --config ./backup.cfg.test
+    --config sample-config/backup.cfg.test
 
 echo "###### test if destination file test1 exists in rolling backup folder"
 if [[ ( ! -f ${destsr[0]}/$(basename ${sources[0]})/test1.txt ) ||  ( ! -f ${destsr[1]}/$(basename ${sources[0]})/test1.txt ) ]]; then
@@ -48,7 +48,7 @@ fi
 echo "###### test status with source folder without changes"
 ./abackup.sh status \
     --sourcefolders ${sources[0]} \
-    --config ./backup.cfg.test
+    --config sample-config/backup.cfg.test
 if [[ $? -ne 0 ]]; then 
     echo failled && exit 1
 fi
@@ -70,7 +70,7 @@ dr=$(realpath -m --relative-to=. ${destsr[0]}/../${tomorrow_wd})/
 ./abackup.sh run \
     --destfolders_rolling $dr \
     --destfolders_incr $dd \
-    --config ./backup.cfg.test
+    --config sample-config/backup.cfg.test
 
 # simulate some changes
 echo test4 > ${sources[0]}/test4.txt
@@ -85,7 +85,7 @@ dr=$(realpath -m --relative-to=. ${destsr[0]}/../${tomorrow_wd})
 ./abackup.sh run \
     --destfolders_rolling $dr \
     --destfolders_incr $dd \
-    --config ./backup.cfg.test
+    --config sample-config/backup.cfg.test
 
 echo "###### list hard linked files"
 find ./test -links +1 ! -type d -print
@@ -108,12 +108,12 @@ fi
 
 echo "###### make sure backup is in sync"
 ./abackup.sh run \
-    --config ./backup.cfg.test
+    --config sample-config/backup.cfg.test
 
 
 echo "###### test status success on no changed files since last backup"
 ./abackup.sh status \
-    --config ./backup.cfg.test
+    --config sample-config/backup.cfg.test
 
 if [[ $? -ne 0 ]]; then 
     echo failled && exit 1
@@ -124,7 +124,7 @@ sleep 1
 touch ${sources[0]}/test2.txt
 touch ${sources[0]}/test3.txt
 ./abackup.sh status \
-    --config ./backup.cfg.test
+    --config sample-config/backup.cfg.test
 
 if [[ $? -ne 4 ]]; then 
     echo failled && exit 1
@@ -133,7 +133,7 @@ fi
 echo "###### test status with source folder with changes"
 ./abackup.sh status \
     --sourcefolders ${sources[0]} \
-    --config ./backup.cfg.test
+    --config sample-config/backup.cfg.test
 
 if [[ $? -ne 4 ]]; then 
     echo failled && exit 1
@@ -144,7 +144,7 @@ touch ${sources[0]}/backup_timestamp
 
 ./abackup.sh status \
     --sourcefolders ${sources[0]} \
-    --config ./backup.cfg.test \
+    --config sample-config/backup.cfg.test \
     --exclude "*.txt"
 
 if [[ $? -ne 0 ]]; then 
@@ -156,7 +156,7 @@ fi
 # the following tests use backup.cfg.testb
 #
 
-source backup.cfg.testb
+source sample-config/backup.cfg.testb
 
 sources=(${sourcefolders//,/ })
 
@@ -168,7 +168,7 @@ do
 done
 
 ./abackup.sh run \
-    --config ./backup.cfg.testb
+    --config sample-config/backup.cfg.testb
 
 dest=$(realpath -m --relative-to . ${destfolders_incr})
 
@@ -185,7 +185,7 @@ fi
 sleep 1
 
 ./abackup.sh run \
-    --config ./backup.cfg.testb
+    --config sample-config/backup.cfg.testb
 
 dest=$(realpath -m --relative-to . ${destfolders_incr})
 

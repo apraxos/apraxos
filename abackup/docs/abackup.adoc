@@ -54,6 +54,8 @@ abackup.sh status
 
 ==== Konfiguration
 
+Die Konfiguration von ``abackup.sh`` erfolgt in der Datei ``backup.cfg``.  
+
 _Wie konfiguriere ich ein einfaches inkrementelles platzsparendes Backup mit Tagesstempel?_ 
 
 .backup.cfg 
@@ -77,15 +79,73 @@ a/*.cdx
 ...
 ----
 
-_Wo finde ich weitere Beispiele?_
+_Wo finde ich Beispiele?_
 
-* backup.cfg.minimal: ein einfaches Standard Beispiel
-* backup.cfg.test: ein komplexes Beispiel, welches die meisten Konfigurationsmöglichen beinhaltet
-* backup.cfg.remotessh: ein einfaches Beipsiel, welches einen entfernten SSH Server als Backup Medium nutzt 
-* backup.cfg.remotesource: ein Beispiel, welches die Daten eines entfernten Rechners lokal auf die Festplatte sichert. Dies ist z.B. nützlich um weitere Arbeitsplatzrechner am Apraxos Server zu sichern.
-* backup.cfg.nfs: ein fortgeschrittenes Beispiel, welches zum Backup einen großen Fileshare nutzt und zusätzlich ein rollierendes Backup ausführt lokal und auf einen entfernten SSH Server durchführt. Es wird hier auch geprüft, ob der Share wirklich gemountet ist. 
+* link:../sample-config/backup.cfg.minimal[backup.cfg.minimal]: ein einfaches Standard Beispiel mit lokalem Backup
+* link:../sample-config/backup.cfg.remotessh[backup.cfg.remotessh]: ein einfaches Beipsiel, welches einen entfernten SSH Server als Backup Medium nutzt 
+* link:../sample-config/backup.cfg.remotesource[backup.cfg.remotesource]: ein Beispiel, welches die Daten eines entfernten Rechners lokal auf die Festplatte sichert. Dies ist z.B. nützlich um weitere Arbeitsplatzrechner am Apraxos Server zu sichern.
+* link:../sample-config/backup.cfg.nfs[backup.cfg.nfs]: ein fortgeschrittenes Beispiel, welches zum Backup einen großen Fileshare nutzt und zusätzlich ein rollierendes Backup ausführt lokal und auf einen entfernten SSH Server durchführt. Es wird hier auch geprüft, ob der Share wirklich gemountet ist. 
+* link:../sample-config/backup.cfg.test[backup.cfg.test]: ein sehr komplexes Beispiel, welches die meisten Konfigurationsmöglichen beinhaltet
+
+==== Die Konfigurationsdatei abackup.cfg im Detail
+
+Das File ``abackup.cfg`` muss im selben Verzeichnis liegen wie das Backup Script ``abackup.sh``. Es beinhaltet die Verzeichnisse die gesichert werden müssen (``sourcefolders``) und Zielverzeichnisse bzw. Zielrechner (``destfolders_XXXX``) und ein paar weitere Konfigurationsmöglichkeiten. 
+
+
+[cols="1,2,1", options="header"] 
+.Variablen
+|===
+|Name
+|Beschreibung
+|Standardwert
+
+|``backuptimestamp``
+|intern verwendet zur Überprüfung des Backup Zustands. Bitte nur ändern, wenn Sie wissen was Sie tun. 
+|./backup_timestamp
+
+|``destfolders_incr``
+|Inkrementelles platzsparendes tägliches Backup. 
+ Alle Backups müssen auf der selben Festplatte liegen. 
+ Das unterste Verzeichnis muss die Tagesstände beinhalten z.B. ``../${_today}/``.
+ Das letzte backup wird mit dem Link ``last`` markiert. 
+|
+
+|``destfolders_rolling``
+|Falls kein inkrementelles Backup möglich ist, kann auch  
+ ein rollierendes Backup genutzt werden, d.h. es werden 
+ Dateien vollständig kopiert und alte Backups rollierend 
+ überschrieben. In der Regel nutzt man Wochentag Namen.
+
+ Die einzelnen Wochentage dürfen auf unterschiedliche Festplatten geschrieben werden. Meist ist ein Inkrementelles Backup ausreichend und die bessere Wahl.
+|
+
+|``logfolder``
+|Fehlermeldungen und übertragene Dateien können hier eingesehen werden
+|/tmp/abackup/log
+
+|``rsyncopts``
+|Siehe rsync Dokumentation. Bitte nur ändern, wenn Sie wissen was Sie tun.
+|-av --delete --exclude-from=./backup_exclude.cfg
+
+|``sourcefolders``
+|Liste von Komma getrennten Quell Verzeichnissen, die gesichert werden müssen. Für die meisten Apraxos Installationen genügt hier der Wert ``~/a/``
+|
+
+|``_today=$(date +%Y-%m-%d-%H%M)``
+|Dies ist eine temporäre Variable, die den gewünschten Zeitstempel für ``destfolders_incr``liefert. Bitte vor ``destfolders_incr`` im Konfiguartionsfile setzen und nur ändern, wenn Sie wissen was Sie tun.  
+|
+
+|``_weekday=$(LC_ALL=de_DE date '+%A')``
+|Dies ist eine temporäre Variable, die den gewünschten Zeitstempel für ``destfolders_incr``liefert. Bitte vor ``destfolders_incr`` im Konfiguartionsfile setzen und nur ändern, wenn Sie wissen was Sie tun.  
+|
+
+|===
+
+
 
 ==== abackup.sh test
+
+zum überprüfen der Funktionalität kann das Testscript ``abackup_test.sh`` ausgeführt werden.
 
 [source,bash]
 ----
