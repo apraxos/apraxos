@@ -1,12 +1,8 @@
 # Eine Beispiel Konfiguration mit einem entfernten SSH Server als Backup Medium
 # Zur Übetragung ohne Passworteingabe, z.B.  den lokalen ~/.ssh/id_rsa.pub am Zielrechner zum File ~/.ssh/authorized_keys hinzufügen 
-#
-# Hinweis: Aktuell funktioniert dies nur mit destfolders_rolling !
-#
 
-sourcefolders=/home/praxis/a
+sourcefolders=/Users/derk/prototypes/apraxos/abackup/docs
 
-_weekday=`LC_ALL=de_DE date '+%A'`
+_today=$(date +%Y-%m-%d-%H%M)
 
-destfolders_rolling=admin@192.168.2.23:/share/vmbackup/abackup/${_weekday}/
-
+destfolders_incr=admin@192.168.10.10:/share/CACHEDEV1_DATA/tmp/abackuptest/${_today}/

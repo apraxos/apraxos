@@ -14,7 +14,7 @@ rsyncopts='-av --delete --exclude-from=./backup_exclude.cfg'
 logfolder=/tmp/abackup/log
 
 # regular expression to decide if a folder is local or remote
-idlocalreg="^[a-zA-Z0-9@_-]+:"
+idlocalreg="(^[a-zA-Z0-9@_\-\.]+):(.*)"
 
 # check_folder ${name} ${folder}
 function check_folder {
@@ -40,13 +40,37 @@ function dobackup {
         check_folder "destination folder" $dest
 
         if [[ ${_type} == "incremental" ]]; then
-            dest=$(realpath -m $dest)
-            dest_last=$(realpath -m ${dest}/..)/last
+            if [[ ${dest} =~ ${idlocalreg} ]]; then
+                # remote folder
 
-            if [[ -d ${dest_last} ]]; then
-                linkdestopt="--link-dest=${dest_last}"
+                hostname=${BASH_REMATCH[1]}
+                remotefolder=${BASH_REMATCH[2]}
+
+                if [[ ! ${remotefolder} =~ ^/ ]]; then
+                    echo "remote ssh folder have to be absolute"
+                    exit 1
+                fi
+
+                # cleanup path names, use realpath:
+                remotefolder=$(realpath -m $remotefolder)
+                remotefolder_last=$(realpath -m ${remotefolder}/..)/last
+
+                if [[ -z $(ssh "${hostname}" ls $remotefolder_last) ]]; then
+                    linkdestopt=
+                else
+                    linkdestopt="--link-dest=${remotefolder_last}"
+                fi
+                echo "linkdestopt ${linkdestopt}"
             else
-                linkdestopt=
+                 # local folder
+                dest=$(realpath -m $dest)
+                dest_last=$(realpath -m ${dest}/..)/last
+
+                if [[ -d ${dest_last} ]]; then
+                    linkdestopt="--link-dest=${dest_last}"
+                else
+                    linkdestopt=
+                fi
             fi
         fi
         
@@ -75,7 +99,13 @@ function dobackup {
         done
 
         if [[ ${_type} == "incremental" ]]; then
+            if [[ ${dest} =~ ${idlocalreg} ]]; then
+                # remote folder
+                ssh "${hostname}" ln -nsf "${remotefolder}" "${remotefolder_last}"
+            else
+                # local folder
                 ln -nsf "${dest}" "${dest_last}"
+            fi
         fi
 
         echo ""

@@ -199,5 +199,27 @@ if [[ 2 -ne $(grep "testb1.txt" test/logb/* | wc -l) ]]; then
     echo failled && exit 1
 fi
 
+echo "###### test idlocalreg if local folder is detected as local folder"
+dest='/tmp/'
+idlocalreg="^[a-zA-Z0-9@_\-\.]+:"
+
+if [[ ${dest} =~ ${idlocalreg} ]]; then
+    echo failled && exit 1
+fi
+
+echo "###### test ssh url reg expression with groups"
+dest='admin@192.168.10.10:/share/CACHEDEV1_DATA/tmp/:abackuptest'
+idlocalreg="(^[a-zA-Z0-9@_\-\.]+):(.*)"
+
+if [[ ${dest} =~ ${idlocalreg} ]]; then
+    if [[ ${BASH_REMATCH[1]} != "admin@192.168.10.10" ]]; then
+            echo failled && exit 1
+    fi
+    if [[ ${BASH_REMATCH[2]} != "/share/CACHEDEV1_DATA/tmp/:abackuptest" ]]; then
+            echo failled && exit 1
+    fi
+fi
+
+
 echo ""
 echo "###### all tests successful"
