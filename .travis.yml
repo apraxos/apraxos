@@ -16,7 +16,7 @@ jobs:
     - mkdir build
     - docker run --rm -v $(pwd):/documents/ asciidoctor/docker-asciidoctor asciidoctor-pdf -D build index.adoc
     - docker run --rm -v $(pwd):/documents/ asciidoctor/docker-asciidoctor asciidoctor -D build index.adoc
-    - tar cvfz abackup.tgz LICENSE build/index.pdf abackup/abackup.sh abackup/backup_exclude.cfg abackup/LICENSE abackup/backup.cfg.*
+    - tar cvfz abackup.tgz LICENSE build/index.pdf abackup/abackup.sh abackup/backup_exclude.cfg abackup/LICENSE abackup/sample-config/backup.cfg.*
     deploy:
     - provider: releases
       skip_cleanup: true
